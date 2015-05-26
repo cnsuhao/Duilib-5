@@ -1,9 +1,6 @@
-#ifndef UIChart_h__
-#define UIChart_h__
-
 #pragma once
 
-namespace UiLib
+namespace DuiLib
 {
 	class CChartViewUI;
 
@@ -91,7 +88,7 @@ namespace UiLib
 		void SetStepTick(int _StepTick = 0);
 		int  GetMinTick();
 		int  GetMaxTick();
-		UINT GetSetpTick();
+		UINT GetStepTick();
 		void ResetTick();
 
 		void AddLabel(LPCTSTR _DataLabel);
@@ -133,6 +130,7 @@ namespace UiLib
 		bool GetVisibleBaseLine();
 
 		void SetChartViewObj(CChartViewUI* _pChartViewUI);
+		CChartViewUI* GetChartView();
 		void Invalidate();
 		void DrawAxis(HDC hDC, const RECT& rcPaint,RECT& rcItem);
 
@@ -179,7 +177,7 @@ namespace UiLib
 		LPCTSTR GetClass() const;
 		LPVOID  GetInterface(LPCTSTR pstrName);
 		void	DoPaint(HDC hDC, const RECT& rcPaint);
-
+		void SetAttribute(LPCTSTR pstrName, LPCTSTR pstrValue);
 	public:
 		void AddLabel(LPCTSTR _DataLabel);
 		void AddSeries(CChartSeries* _ChartSeries);
@@ -200,5 +198,3 @@ namespace UiLib
 		TStdPtrArray<CChartSeries*>			m_rChartSeries;
 	};
 }
-
-#endif // UIChart_h__

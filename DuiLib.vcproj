@@ -443,6 +443,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\Control\UICalendar.cpp"
+					>
+				</File>
+				<File
 					RelativePath=".\Control\UIChartView.cpp"
 					>
 				</File>
@@ -673,6 +677,10 @@
 				</File>
 				<File
 					RelativePath=".\Control\UIButton.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Control\UICalendar.h"
 					>
 				</File>
 				<File

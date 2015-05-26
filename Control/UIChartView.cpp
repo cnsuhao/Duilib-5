@@ -202,7 +202,6 @@ namespace DuiLib
 		m_iAxissCale(0),					//基线位置
 		m_iMaxBaseLine(0),					//基线最大值
 		m_iMinBaseLine(0),					//基线最小值
-		m_dXYAxisLineColor(0xFF000000),		//刻度线条颜色
 		m_pChartView(NULL)
 	{
 		m_sLegendTitel			= _T("Legend");
@@ -210,7 +209,8 @@ namespace DuiLib
 		m_rcChartPadding.top	= 5;
 		m_rcChartPadding.right	= 5;
 		m_rcChartPadding.bottom	= 5;
-		SetTickLimis(GetMinTick(),GetMaxTick(),GetSetpTick());
+		m_dXYAxisLineColor =0xFF363636;		//刻度线条颜色
+		SetTickLimis(GetMinTick(),GetMaxTick(),GetStepTick());
 	}
 
 	CChartXYAxis::~CChartXYAxis( void )
@@ -222,7 +222,7 @@ namespace DuiLib
 	{
 		m_iMinTick	= _MinTick<GetMinTick()?_MinTick:m_iMinTick;
 		m_iMaxTick	= _MaxTick>GetMaxTick()?_MaxTick:m_iMaxTick;
-		m_uStepTick	= (_StepTick<=0||_StepTick < GetSetpTick())?(int)((m_iMaxTick - m_iMinTick)/5):_StepTick;
+		m_uStepTick	= (_StepTick<=0||_StepTick < GetStepTick())?(int)((m_iMaxTick - m_iMinTick)/5):_StepTick;
 		m_rDataAxis.Empty();
 
 		if(_StepTick){
@@ -233,6 +233,7 @@ namespace DuiLib
 			for(int nIndex = 0-_StepTick;nIndex > _MinTick;nIndex -= _StepTick){
 				m_rDataAxis.Add(nIndex);
 			}
+			//将数据补足步长的整数倍
 			m_rDataAxis.Add(_MinTick);
 			m_rDataAxis.Add(_MaxTick);
 		}
@@ -242,12 +243,12 @@ namespace DuiLib
 
 	void CChartXYAxis::SetMinTick( int _MinTick )
 	{
-		SetTickLimis(_MinTick,GetMaxTick(),GetSetpTick());
+		SetTickLimis(_MinTick,GetMaxTick(),GetStepTick());
 	}
 
 	void CChartXYAxis::SetMaxTick( int _MaxTick )
 	{
-		SetTickLimis(GetMinTick(),_MaxTick,GetSetpTick());
+		SetTickLimis(GetMinTick(),_MaxTick,GetStepTick());
 	}
 
 	void CChartXYAxis::SetStepTick( int _StepTick /*= 0*/ )
@@ -265,7 +266,7 @@ namespace DuiLib
 		return m_iMaxTick > m_iMaxTickEx?m_iMaxTick:m_iMaxTickEx;
 	}
 
-	UINT CChartXYAxis::GetSetpTick()
+	UINT CChartXYAxis::GetStepTick()
 	{
 		return m_uStepTick;
 	}
@@ -278,7 +279,7 @@ namespace DuiLib
 		m_iMinTickEx	= 5;
 		m_uStepTick		= 1;
 
-		SetTickLimis(GetMinTick(),GetMaxTick(),GetSetpTick());
+		SetTickLimis(GetMinTick(),GetMaxTick(),GetStepTick());
 	}
 
 	void CChartXYAxis::AddLabel( LPCTSTR _DataLabel )
@@ -403,7 +404,7 @@ namespace DuiLib
 		Invalidate();
 	}
 
-	UiLib::lalign CChartXYAxis::GetLegendLocation()
+	lalign CChartXYAxis::GetLegendLocation()
 	{
 		return m_uLegendLocation;
 	}
@@ -435,9 +436,14 @@ namespace DuiLib
 		m_pChartView = _pChartViewUI;
 	}
 
+	CChartViewUI* CChartXYAxis::GetChartView()
+	{
+		return m_pChartView;
+	}
+
 	void CChartXYAxis::Invalidate()
 	{
-		if(m_pChartView)
+		if(GetChartView())
 			m_pChartView->Invalidate();
 	}
 
@@ -499,7 +505,6 @@ namespace DuiLib
 
 				int nValue = m_rDataAxis.GetAt(nIndex);
 
-
 				int nValueScale			= (int)((nValue > 0?nValue:(nValue - nValue*2))* m_dDataScale);
 				nRcItemYAxis.right		= nRcYAxis.left - 5;
 				nRcItemYAxis.left		= nRcYAxis.left;
@@ -512,14 +517,15 @@ namespace DuiLib
 				nRcItemYAxisEx.bottom	= nRcItemYAxis.bottom;
 
 				if(nValue == GetMaxTick())
-					m_iMaxBaseLine		= nRcItemYAxisEx.top;
+					m_iMaxBaseLine	= nRcItemYAxisEx.top;
 				if(nValue == GetMinTick())
-					m_iMinBaseLine		= nRcItemYAxisEx.top;
+					m_iMinBaseLine	= nRcItemYAxisEx.top;
 
 				//绘制基线
 				if(GetVisibleBaseLine())
-					CRenderEngine::DrawLine(hDC,nRcItemYAxisEx,m_uXYAxisLineSize,RGB(CutColor(m_dXYAxisLineColor,20),CutColor(m_dXYAxisLineColor,20),CutColor(m_dXYAxisLineColor,20)));
+					CRenderEngine::DrawLine(hDC,nRcItemYAxisEx,1,m_dXYAxisLineColor);
 
+				//Y轴刻度线
 				CRenderEngine::DrawLine(hDC,nRcItemYAxis,m_uXYAxisLineSize,m_dXYAxisLineColor);
 				
 				CDuiString sValue;
@@ -571,24 +577,11 @@ namespace DuiLib
 
 					nRcItemXAxis.left		= (int)(nRcYAxis.left + nGroupScale*(nIndex+1) - nItemSpace/2);
 					nRcItemXAxis.right		= nRcItemXAxis.left;
-					nRcItemXAxis.top		= m_iMinBaseLine + 2;
-					nRcItemXAxis.bottom		= m_iMinBaseLine - 3;
-
-					CRenderEngine::DrawLine(hDC,nRcItemXAxis,m_uXYAxisLineSize,RGB(CutColor(m_dXYAxisLineColor,75),CutColor(m_dXYAxisLineColor,75),CutColor(m_dXYAxisLineColor,75)));
-
 					nRcItemXAxis.top		= m_iAxissCale + 2;
 					nRcItemXAxis.bottom		= m_iAxissCale - 3;
 
+					//X轴刻度线
 					CRenderEngine::DrawLine(hDC,nRcItemXAxis,m_uXYAxisLineSize,m_dXYAxisLineColor);
-
-					if(m_iAxissCale != m_iMinBaseLine){
-						nRcItemXAxis.left		= nRcXAxis.right;
-						nRcItemXAxis.right		= nRcXAxis.left +1;
-						nRcItemXAxis.top		= m_iMinBaseLine;
-						nRcItemXAxis.bottom		= m_iMinBaseLine;
-
-						CRenderEngine::DrawLine(hDC,nRcItemXAxis,m_uXYAxisLineSize,RGB(CutColor(m_dXYAxisLineColor,75),CutColor(m_dXYAxisLineColor,75),CutColor(m_dXYAxisLineColor,75)));
-					}
 
 					CDuiString nRcGroupXText	= m_rChartLabels.GetAt(nIndex);
 					RECT nRcItemXText		= {0};
@@ -666,31 +659,34 @@ namespace DuiLib
 						nRcSeriesLegend.bottom	= nRcSeriesLegend.top + m_uLegendMaxHeight;
 					}
 					nRcSeriesLegend.right		= nRcXAxis.right - (int)(m_iMaxGraphWidth - nSeriesLegendWidth)/2 - 2;
+					
+					if (m_iMaxGraphWidth > nRcSeriesLegend.right - nRcSeriesLegend.left)
+					{
+						CRenderEngine::DrawRect(hDC,nRcSeriesLegend,1,m_dXYAxisLineColor);
 
-					CRenderEngine::DrawRect(hDC,nRcSeriesLegend,1,m_dXYAxisLineColor);
+						for(int nSeriesIndex = 0;(UINT)nSeriesIndex < m_pChartView->GetSeriesCount();nSeriesIndex++){
+							CChartSeries* pSeries	= m_pChartView->GetSeries(nSeriesIndex);
 
-					for(int nSeriesIndex = 0;(UINT)nSeriesIndex < m_pChartView->GetSeriesCount();nSeriesIndex++){
-						CChartSeries* pSeries	= m_pChartView->GetSeries(nSeriesIndex);
+							if(!pSeries)
+								continue;
 
-						if(!pSeries)
-							continue;
+							RECT nRcLegendText		= {0};
+							nRcLegendText.left		= nRcSeriesLegend.left + m_uLegendMaxWidth * nSeriesIndex + 5;
+							nRcLegendText.right		= nRcLegendText.left + m_uLegendMaxWidth - 48;
+							nRcLegendText.top		= nRcSeriesLegend.top + 2;
+							nRcLegendText.bottom	= nRcSeriesLegend.bottom;
 
-						RECT nRcLegendText		= {0};
-						nRcLegendText.left		= nRcSeriesLegend.left + m_uLegendMaxWidth * nSeriesIndex + 5;
-						nRcLegendText.right		= nRcLegendText.left + m_uLegendMaxWidth - 48;
-						nRcLegendText.top		= nRcSeriesLegend.top + 2;
-						nRcLegendText.bottom	= nRcSeriesLegend.bottom;
+							CRenderEngine::DrawText(hDC,m_pChartView->GetManager(),nRcLegendText,pSeries->GetLegendText(),m_dXYAxisLineColor,m_uXYAxisFontId,DT_LEFT|DT_VCENTER|DT_SINGLELINE);
 
-						CRenderEngine::DrawText(hDC,m_pChartView->GetManager(),nRcLegendText,pSeries->GetLegendText(),m_dXYAxisLineColor,m_uXYAxisFontId,DT_LEFT|DT_VCENTER|DT_SINGLELINE);
+							RECT nRcLegendBar		= {0};
+							nRcLegendBar.left		= nRcLegendText.right + 5;
+							nRcLegendBar.right		= nRcLegendText.left + m_uLegendMaxWidth - 15;
+							nRcLegendBar.top		= nRcSeriesLegend.top + 4;
+							nRcLegendBar.bottom		= nRcSeriesLegend.bottom - 4;
 
-						RECT nRcLegendBar		= {0};
-						nRcLegendBar.left		= nRcLegendText.right + 5;
-						nRcLegendBar.right		= nRcLegendText.left + m_uLegendMaxWidth - 15;
-						nRcLegendBar.top		= nRcSeriesLegend.top + 4;
-						nRcLegendBar.bottom		= nRcSeriesLegend.bottom - 4;
-
-						CRenderEngine::DrawGradient(hDC,nRcLegendBar,pSeries->GetSeriesColorA(),pSeries->GetSeriesColorB(),false,16);
-						CRenderEngine::DrawRect(hDC,nRcLegendBar,1,m_dXYAxisLineColor);
+							CRenderEngine::DrawGradient(hDC,nRcLegendBar,pSeries->GetSeriesColorA(),pSeries->GetSeriesColorB(),false,16);
+							CRenderEngine::DrawRect(hDC,nRcLegendBar,1,m_dXYAxisLineColor);
+						}
 					}
 				}
 			}
@@ -755,11 +751,11 @@ namespace DuiLib
 			if(pItem->GetDataValue() < GetMinTick())
 				SetMinTick((int)(pItem->GetDataValue()));
 
-			int aa = (GetMaxTick() - GetMinTick())/5;
-			int bb =  GetSetpTick();
+			int nTickLen = (GetMaxTick() - GetMinTick())/5;
+			int nTickStep =  GetStepTick();
 
-			if((UINT)((GetMaxTick() - GetMinTick())/5) > GetSetpTick())
-				SetStepTick((int)((GetMaxTick() - GetMinTick())/5));
+			if((UINT)nTickLen > (UINT)nTickStep)
+				SetStepTick(nTickLen);
 
 			if(pItem->GetDataValue() > GetMaxTick())
 				SetMaxTick((int)(pItem->GetDataValue()));
@@ -809,7 +805,8 @@ namespace DuiLib
 		return m_bVisibleBaseLine;
 	}
 
-
+	////////////////////////////////////////////////////////////////////////
+	////////
 
 	CChartViewUI::CChartViewUI( void )
 	{
@@ -831,6 +828,15 @@ namespace DuiLib
 	{
 		if( _tcscmp(pstrName, DUI_CTR_CHARTVIEW) == 0 ) return static_cast<CChartViewUI*>(this);
 		else return CHorizontalLayoutUI::GetInterface(pstrName);
+	}
+
+	void CChartViewUI::SetAttribute(LPCTSTR pstrName, LPCTSTR pstrValue)
+	{
+		/*if ()
+		{
+		}
+		else*/
+			return CHorizontalLayoutUI::SetAttribute(pstrName,pstrValue);
 	}
 
 	void CChartViewUI::DoPaint( HDC hDC, const RECT& rcPaint )
@@ -976,6 +982,5 @@ namespace DuiLib
 	{
 		return m_rChartSeries.GetSize();
 	}
-
 }
 

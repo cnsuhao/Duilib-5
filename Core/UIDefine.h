@@ -218,14 +218,14 @@ protected:                                                                \
 ///
 
 #define  DUI_CTR_EDIT                            (_T("Edit"))
-#define  DUI_CTR_EDIT_EX                       (_T("Edit2"))
+#define  DUI_CTR_EDIT_EX                         (_T("Edit2"))
 #define  DUI_CTR_LIST                            (_T("List"))
 #define  DUI_CTR_TEXT                            (_T("Text"))
-#define  DUI_CTR_MENU						 (_T("Menu"))
+#define  DUI_CTR_MENU						     (_T("Menu"))
 
 #define  DUI_CTR_COMBO                           (_T("Combo"))
 #define  DUI_CTR_LABEL                           (_T("Label"))
-#define  DUI_CTR_FLASH							(_T("Flash"))
+#define  DUI_CTR_FLASH							 (_T("Flash"))
 
 #define  DUI_CTR_BUTTON                          (_T("Button"))
 #define  DUI_CTR_OPTION                          (_T("Option"))
@@ -233,7 +233,7 @@ protected:                                                                \
 
 #define  DUI_CTR_CONTROL                         (_T("Control"))
 #define  DUI_CTR_ACTIVEX                         (_T("ActiveX"))
-#define  DUI_CTR_PICTURE							(_T("Picture"))
+#define  DUI_CTR_PICTURE						 (_T("Picture"))
 
 #define  DUI_CTR_LISTITEM                        (_T("ListItem"))
 #define  DUI_CTR_PROGRESS                        (_T("Progress"))
@@ -243,23 +243,24 @@ protected:                                                                \
 #define  DUI_CTR_DATETIME                        (_T("DateTime"))
 #define  DUI_CTR_TREEVIEW                        (_T("TreeView"))
 #define  DUI_CTR_TREENODE                        (_T("TreeNode"))
+#define  DUI_CTR_CALENDAR						 (_T("Calendar"))
 
 #define  DUI_CTR_CONTAINER                       (_T("Container"))
 #define  DUI_CTR_TABLAYOUT                       (_T("TabLayout"))
 #define  DUI_CTR_SCROLLBAR                       (_T("ScrollBar"))
-#define  DUI_CTR_CHARTVIEW						(_T("ChartView"))
+#define  DUI_CTR_CHARTVIEW						 (_T("ChartView"))
 
 #define  DUI_CTR_LISTHEADER                      (_T("ListHeader"))
 #define  DUI_CTR_TILELAYOUT                      (_T("TileLayout"))
 #define  DUI_CTR_WEBBROWSER                      (_T("WebBrowser"))
-#define  DUI_CTR_WKEBROWSER						(_T("WkeBrowser"))
+#define  DUI_CTR_WKEBROWSER						 (_T("WkeBrowser"))
 #define  DUI_CTR_CHILDLAYOUT                     (_T("ChildLayout"))
-#define  DUI_CTR_GROUPLAYOUT					(_T("GroupLayout"))
+#define  DUI_CTR_GROUPLAYOUT					 (_T("GroupLayout"))
 #define  DUI_CTR_LISTELEMENT                     (_T("ListElement"))
-#define  DUI_CTR_SLIDERRANGE						(_T("SliderRange"))
-#define  DUI_CTR_MENUELEMENT					(_T("MenuElement"))
+#define  DUI_CTR_SLIDERRANGE					 (_T("SliderRange"))
+#define  DUI_CTR_MENUELEMENT					 (_T("MenuElement"))
 
-#define  DUI_CTR_MENULISTLABEL					(_T("MenuListLabel"))
+#define  DUI_CTR_MENULISTLABEL					 (_T("MenuListLabel"))
 
 #define  DUI_CTR_DIALOGLAYOUT                    (_T("DialogLayout"))
 

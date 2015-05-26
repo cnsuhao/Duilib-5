@@ -99,6 +99,7 @@
 #include "Control/UIButton.h"
 #include "Control/UIOption.h"
 #include "Control/UICheckBox.h"
+#include "Control/UICalendar.h"
 
 #include "Control/UIProgress.h"
 #include "Control/UISlider.h"
