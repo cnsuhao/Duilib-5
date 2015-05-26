@@ -39,22 +39,21 @@ namespace DuiLib
 
 		LPCTSTR	GetClass() const;
 		LPVOID	GetInterface(LPCTSTR pstrName);
-		void	DoEvent(TEventUI& event);
 		void	SetAttribute(LPCTSTR pstrName, LPCTSTR pstrValue);
 
 		CControlUI* CreateStatusPanel();
-		void SetWeekPanel(CControlUI* pControl,int _Week);
+		void SetWeekPanel(CControlUI* pControl,int nWeek);
 		void SetDayPanel(COptionUI* pControl,bool bWeekEnd,TCalendarInfo* pCalendarInfo);
-		void SetDayPanel(COptionUI* pControl,bool bWeekEnd,int _Year,int _Mooth,int _Day,int _Week,int _WeekLine,int _AsMooth);
+		void SetDayPanel(COptionUI* pControl,bool bWeekEnd,int nYear,int nMooth,int nDay,int nWeek,int nWeekLine,int nAsMooth);
 		void UpdateMainTitle(int nYear,int nMooth);
-		void ChangeDateTime(int nYear,int _Mooth,int nDay);
+		void ChangeDateTime(int nYear,int nMooth,int nDay);
 	public:
 		bool IsLeapYear(int nYear);
 		int  DaysOfMonth(int nMooth,int nYear = -1);
 		void ShowCalendar(int nYear,int nMooth);
 		void SetDateTime(TCalendarInfo* pTCalendarInfo);
 		void SetDateTime(int nYear,int nMooth,int nDay);
-		CDuiString	GetDateTime();
+		CDuiString GetDateTime();
 	public:
 		void SetCalendarStyle(TCalendarStyle& CalendarStyle);
 
@@ -82,7 +81,7 @@ namespace DuiLib
 		void SetStatusInfoHeight(int nHeight);
 		int GetStatusInfoHeight();
 
-		void ParseCalendarStyle(LPCTSTR lpszStyle,TCalendarStyle* pCalendarStyle);
+		void ParseCalendarStyle(LPCTSTR lpszStyle,TCalendarStyle* pCalendarStyle = NULL);
 	protected:
 		void NormalizeTime(int& nYear,int& nMonth);
 	private:

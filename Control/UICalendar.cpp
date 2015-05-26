@@ -155,11 +155,6 @@ namespace DuiLib
 		return CVerticalLayoutUI::GetInterface(pstrName);
 	}
 
-	void CCalendarUI::DoEvent( TEventUI& event )
-	{ 
-		CVerticalLayoutUI::DoEvent(event);
-	}
-
 	void CCalendarUI::SetCalendarStyle(TCalendarStyle& CalendarStyle)
 	{
 		m_pMainTitleHoriz->SetBkColor(CalendarStyle.dwMainTitleColor);
@@ -587,7 +582,7 @@ namespace DuiLib
 		CDuiString sValue;
 		LPTSTR pstr = NULL;
 
-		TCalendarStyle* pCalendarInfo = pCalendarStyle?pCalendarStyle:m_CalendarStyle;
+		TCalendarStyle* pCalendarInfo = pCalendarStyle?pCalendarStyle:&m_CalendarStyle;
 
 		while( *lpszStyle != _T('\0') ) {
 			sItem.Empty();
