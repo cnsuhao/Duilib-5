@@ -69,15 +69,15 @@ namespace DuiLib
 
 	void CAnimationTabLayoutUI::DoEvent(TEventUI& event)
 	{
-		if( event.Type == UIEVENT_TIMER )
-			OnTimer(  event.wParam );
+		if (event.Type == UIEVENT_TIMER)
+			OnTimer(event.wParam);
 		else
-			__super::DoEvent( event );
+			CTabLayoutUI::DoEvent(event);
 	}
 
 	void CAnimationTabLayoutUI::SetPos(RECT rc)
 	{
-		if (m_bAnimate && m_pControl && IsRectEmpty(&m_rcCurPos) == FALSE) 
+		if (m_bAnimate && m_pLast && m_pControl && IsRectEmpty(&m_rcCurPos) == FALSE) 
 		{
 			CControlUI::SetPos(rc);
 			m_pControl->SetPos(m_rcCurPos);
@@ -86,10 +86,10 @@ namespace DuiLib
 			CTabLayoutUI::SetPos(rc);
 	}
 
-	void CAnimationTabLayoutUI::OnTimer( int nTimerID )
+	void CAnimationTabLayoutUI::OnTimer(int nTimerID)
 	{
 		if (nTimerID == TAB_ANIMATION_TABLAYOUT_TIMER_ID)
-			OnAnimationElapse( nTimerID );
+			OnAnimationElapse(nTimerID);
 	}
 
 	void CAnimationTabLayoutUI::OnAnimationStart(INT nAnimationID, BOOL bFirstLoop)
@@ -143,13 +143,16 @@ namespace DuiLib
 		}
 
 		if (m_pControl) m_pControl->SetPos(m_rcCurPos);
-		if (m_pLast)		m_pLast->SetPos(m_rcLastPos);
+		if (m_pLast)	m_pLast->SetPos(m_rcLastPos);
 	}
 
 	void CAnimationTabLayoutUI::OnAnimationStop(INT nAnimationID) 
 	{
 		m_rcItem = m_rcLastPos =  m_rcCurPos = m_rcItemOld;
-		if (m_pLast) m_pLast->SetVisible(false);
+		if (m_pLast) {
+			m_pLast->SetVisible(false);
+			m_pLast = NULL;
+		}
 	}
 
 	void CAnimationTabLayoutUI::SetAttribute(LPCTSTR pstrName, LPCTSTR pstrValue)

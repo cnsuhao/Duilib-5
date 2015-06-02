@@ -6,6 +6,7 @@ namespace DuiLib
 	CWkeBrowserUI::CWkeBrowserUI()
 		: m_nButtonState(0)
 		, m_fZoom(1.0)
+		, m_bEdit(false)
 	{
 		m_pWebView = NULL;//
 	}
@@ -55,6 +56,8 @@ namespace DuiLib
 			m_pWebView->keyDown(event.chKey, flags, false);
 			if ( event.chKey == VK_F5 )
 				Refresh();
+			else if (event.chKey == _T('I') && MK_CONTROL & event.wKeyState)
+				SetEditable(m_bEdit == false);
 			else if(event.chKey == _T('0') && MK_CONTROL & event.wKeyState)
 				SetZoomFactor(1.0);
 			else if(event.chKey == VK_OEM_PLUS && MK_CONTROL & event.wKeyState)
@@ -135,7 +138,7 @@ namespace DuiLib
 	void CWkeBrowserUI::SetAttribute(LPCTSTR pstrName, LPCTSTR pstrValue)
 	{
 		if (_tcscmp(pstrName,_T("url")) == 0)	SetUrl(pstrValue);
-		else if (_tcscmp(pstrName,_T("editable")) == 0)	SetEditable(_tcscmp(pstrValue,_T("true")) == 0);
+		else if (_tcscmp(pstrName,_T("editable")) == 0) SetEditable( _tcscmp(pstrValue,_T("true")) == 0);
 		else
 			CControlUI::SetAttribute(pstrName,pstrValue);
 	}
@@ -145,11 +148,8 @@ namespace DuiLib
 		if (m_pWebView == NULL)
 			return;
 
-		if (m_pWebView->isLoadComplete())
-			BitBlt(hDC,m_rcItem.left,m_rcItem.top,m_rcItem.right - m_rcItem.left,
-				m_rcItem.bottom - m_rcItem.top, m_pWebView->getViewDC(),0,0,SRCCOPY);
-		else
-			CRenderEngine::DrawText(hDC,m_pManager,m_rcItem,_T("Мгдижа..."),0xFF000000,0,DT_SINGLELINE | DT_VCENTER | DT_CENTER);
+		BitBlt(hDC,m_rcItem.left,m_rcItem.top,m_rcItem.right - m_rcItem.left,
+			m_rcItem.bottom - m_rcItem.top, m_pWebView->getViewDC(),0,0,SRCCOPY);
 	}
 
 	void CWkeBrowserUI::SetPos(RECT rc)
@@ -176,7 +176,7 @@ namespace DuiLib
 		CDuiRect rect(m_rcItem);
 		m_pWebView->resize(rect.GetWidth(),rect.GetHeight());
 
-		m_pManager->SetTimer(this,nTimerID,50);
+		m_pManager->SetTimer(this,nTimerID,15);
 		if (m_strUrl.IsEmpty() == false)
 			Navigate(m_strUrl);
 	}
@@ -241,6 +241,7 @@ namespace DuiLib
 
 	void CWkeBrowserUI::SetEditable(bool bEditable /*= true*/)
 	{
+		m_bEdit = bEditable;
 		if (m_pWebView)
 			m_pWebView->setEditable(bEditable);
 	}

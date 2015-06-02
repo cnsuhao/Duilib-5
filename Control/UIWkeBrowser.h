@@ -34,10 +34,12 @@ namespace DuiLib
 	protected:
 		void MouseEvent(UINT uMsg,TEventUI& event);
 
+		/*static UINT wkeThread(LPVOID lParam);*/
 	protected:
 		wkeWebView m_pWebView;
 		CDuiString m_strUrl;
 		UINT	m_nButtonState;
 		float		m_fZoom;
+		bool		m_bEdit;
 	};
 }

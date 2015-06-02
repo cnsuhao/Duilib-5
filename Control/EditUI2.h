@@ -47,6 +47,11 @@ namespace DuiLib
 		void SetWaterText(LPCTSTR lpszWaterText);
 		void SetWaterTextColor(DWORD dwWaterColor);
 	protected:
+		void OnCut(int nPos,int nLen);
+		void OnPaste(int nPos);
+		void OnCopy(int nPos,int nLen);
+		void OnCheckAll();
+
 		bool IsWaterMode();
 		void SetWaterMode(bool bWaterMode);
 		bool GetEditText(CDuiString& strEditText);
@@ -65,6 +70,7 @@ namespace DuiLib
 		void DrawText(HDC hDC,const RECT& rc,const CDuiString& sText);
 		void DrawSelectionText(HDC hDC,const RECT& rc,const CDuiString& sText);
 		void CalcTextRect(HDC hDC,const CDuiString& strText,RECT& rcSelection,int nStart,int nLen);
+
 	protected:
 		int	 m_nCaretWidth;							//输入标记宽度
 		UINT m_uMaxChar;								//最大字符数

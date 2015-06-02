@@ -165,7 +165,7 @@ namespace DuiLib
 		}
 
 		if (event.Type == UIEVENT_CHAR){
-			if (event.chKey == VK_BACK || event.chKey == VK_RETURN)
+			if (event.chKey == VK_BACK || event.chKey == VK_RETURN || event.chKey == VK_ESCAPE)
 				return;
 			if (event.wKeyState && (event.wKeyState & MK_SHIFT) != MK_SHIFT)
 				return;
@@ -184,6 +184,8 @@ namespace DuiLib
 				m_sText += strTextRight;
 				m_nSelStart = m_nCaretPos = nMin+1;
 				SaveEditText(m_sText);
+				RestartCaretBlinkTimer();
+				m_pManager->SendNotify(this,DUI_MSGTYPE_VALUECHANGED);
 				Invalidate();
 			}
 			return;
@@ -651,7 +653,7 @@ namespace DuiLib
 		int nCalcCaretPos = m_nCaretPos;
 		CDuiString sText;
 		GetEditText(sText);
-		int nLen = sText.GetLength();
+		const int nLen = sText.GetLength();
 		switch (event.chKey)
 		{
 			case VK_HOME:
@@ -693,30 +695,34 @@ namespace DuiLib
 			case 'C':
 				if ((event.wKeyState & MK_CONTROL) == MK_CONTROL)
 				{
-					//OutputDebugString(_T("¿½±´"));
+					const int nMin = __min(m_nSelStart,m_nCaretPos);
+					const int nMax = __max(m_nSelStart,m_nCaretPos);
+					OnCopy(nMin,nMax-nMin);
 				}
-			case 'P':
+			case 'V':
 				if ((event.wKeyState & MK_CONTROL) == MK_CONTROL)
-				{
-					//Õ³Ìù
-				}
+					OnPaste(m_nCaretPos);
 				break;
 			case 'X':
 				if ((event.wKeyState & MK_CONTROL) == MK_CONTROL)
 				{
-					//¼ôÇÐ
+					const int nMin = __min(m_nSelStart,m_nCaretPos);
+					const int nMax = __max(m_nSelStart,m_nCaretPos);
+					OnCut(nMin,nMax-nMin);
 				}
 				break;
 			case 'A':
 				if ((event.wKeyState & MK_CONTROL) == MK_CONTROL)
-				{
-					//È«Ñ¡
-				}
+					OnCheckAll();
 				break;
 			default:
 					bValidKey = false;
 				break;
 		}
+
+		if (nLen != m_sText.GetLength())
+			m_pManager->SendNotify(this,DUI_MSGTYPE_VALUECHANGED);
+
 		CDuiString strTipInfo;
 		if (nCalcCaretPos < 0)
 			nCalcCaretPos = 0;
@@ -781,16 +787,6 @@ namespace DuiLib
 		m_rcCaret.left -= nFixed;
 		m_rcCaret.right = m_rcCaret.left + m_nCaretWidth;
 	}
-
-	/*int CEditUI2::GetTextLen(HDC hDC,int nPos)
-	{
-		CDuiString sText;
-		GetEditText(sText);
-		RECT rcTextRange = {0};
-		LPCTSTR lpszTextRange = sText.Left(nPos);
-		CRenderEngine::DrawText(hDC,m_pManager,rcTextRange,lpszTextRange,0,m_iFont,DT_CALCRECT);
-		return rcTextRange.right - rcTextRange.left;
-	}*/
 
 	void CEditUI2::CalcStartSelRect(HDC hDC,const CDuiString& sText,int nPos,RECT& rcRange)
 	{
@@ -863,5 +859,25 @@ namespace DuiLib
 		}
 
 		dwOffset = m_rcCaret.left - m_rcItem.left - m_rcTextPadding.left;
+	}
+
+	void CEditUI2::OnCheckAll()
+	{
+
+	}
+
+	void CEditUI2::OnCopy(int nPos,int nLen)
+	{
+
+	}
+
+	void CEditUI2::OnPaste(int nPos)
+	{
+
+	}
+
+	void CEditUI2::OnCut(int nPos,int nLen)
+	{
+
 	}
 }

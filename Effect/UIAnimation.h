@@ -36,7 +36,6 @@ namespace DuiLib
 
 	//protected:
 	public:
-		//friend class CDUIAnimation;
 
 		int m_nAnimationID;
 		int m_nElapse;
@@ -47,9 +46,6 @@ namespace DuiLib
 		BOOL m_bLoop;
 		BOOL m_bFirstLoop;
 	};
-
-	
-	/*template class __declspec(dllexport) std::vector<CAnimationData>; */
 
 	class UILIB_API CUIAnimation: public IUIAnimation
 	{
