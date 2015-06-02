@@ -607,7 +607,7 @@ namespace DuiLib
 		rcSelection.left += m_rcItem.left + m_rcTextPadding.left;
 		rcSelection.top += m_rcItem.top + m_rcTextPadding.top;
 		rcSelection.right = rcSelection.left +nWidth;
-		rcSelection.bottom = rcSelection.top + nHeight;
+		rcSelection.bottom = rcSelection.top + nHeight - 1;
 	}
 
 	int CEditUI2::GetCaretPos(HDC hDC,const CDuiString& sText)
@@ -688,7 +688,7 @@ namespace DuiLib
 				break;
 			case VK_RETURN:
 				if (m_pManager)
-					m_pManager->SendNotify(this,DUI_MSGTYPE_EDIT_RETURN,event.wParam,event.lParam);
+					m_pManager->SendNotify(this,DUI_MSGTYPE_RETURN,event.wParam,event.lParam);
 				return false;
 			case 'C':
 				if ((event.wKeyState & MK_CONTROL) == MK_CONTROL)

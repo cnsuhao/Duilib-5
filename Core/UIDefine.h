@@ -73,7 +73,6 @@ union DuiMessageMapFunctions
 #define DUI_MSGTYPE_VALUECHANGED           (_T("valuechanged"))
 
 #define DUI_MSGTYPE_SELECTCHANGED 		   (_T("selectchanged"))
-#define DUI_MSGTYPE_EDIT_RETURN					(_T("editreturn"))
 //////////////////////////////////////////////////////////////////////////
 
 

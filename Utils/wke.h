@@ -1,20 +1,9 @@
-/*
- * 
- * BlzFans@hotmail.com
- * http://wke.sf.net
- * http://www.github.com/BlzFans/wke
- * licence LGPL
- *
- */
+#pragma once
 
-#ifndef WKE_H
-#define WKE_H
-
-
-#ifdef BUILDING_wke
-#   define WKE_API __declspec(dllexport)
+#ifdef UILIB_EXPORTS
+#define WKE_API __declspec(dllexport)
 #else
-#   define WKE_API __declspec(dllimport)
+#define WKE_API __declspec(dllimport)
 #endif
 
 typedef char utf8;
@@ -66,7 +55,7 @@ typedef void (*ON_URL_CHANGED) (const struct _wkeClientHandler* clientHandler, c
 typedef struct _wkeClientHandler {
     ON_TITLE_CHANGED onTitleChanged;
     ON_URL_CHANGED onURLChanged;
-} wkeClientHandler;
+} wkeClientHandler,*PwkeClientHandler;
 
 typedef struct _wkeBufHandler
 {
@@ -125,9 +114,12 @@ namespace wke
         virtual void addDirtyArea(int x, int y, int w, int h) = 0;
 
         virtual void layoutIfNeeded() = 0;
-        virtual void paint(void* bits, int pitch) = 0;
 		virtual void tick() = 0;
-		virtual void paint(HDC hdc,int x,int y,int cx,int cy,int xSrc,int ySrc,bool fKeepAlpha) = 0;
+        virtual void paint(void* bits, int pitch)=0;
+        virtual void paint(void* bits, int bufWid, int bufHei, int xDst, int yDst, int w, int h, int xSrc, int ySrc, bool bCopyAlpha)=0;
+        virtual HDC getViewDC() =0;
+		virtual HWND getPaintWnd() = 0;
+		virtual void setPaintWnd(HWND host) = 0;
 
         virtual bool canGoBack() const = 0;
         virtual bool goBack() = 0;
@@ -176,6 +168,10 @@ namespace wke
 
 		virtual void setBufHandler(wkeBufHandler *handler) = 0;
 		virtual const wkeBufHandler * getBufHandler() const  = 0;
+
+		virtual void runModal() = 0;
+		virtual void setHostHWND(HWND host) = 0;
+		virtual IWebView* createWindow() = 0;
     };
 }
 
@@ -264,7 +260,8 @@ WKE_API void wkeSetDirty(wkeWebView webView, bool dirty);
 WKE_API bool wkeIsDirty(wkeWebView webView);
 WKE_API void wkeAddDirtyArea(wkeWebView webView, int x, int y, int w, int h);
 WKE_API void wkeLayoutIfNeeded(wkeWebView webView);
-WKE_API void wkePaint(wkeWebView webView, void* bits, int pitch);
+WKE_API void wkePaint(wkeWebView webView, void* bits,int bufWid, int bufHei, int xDst, int yDst, int w, int h, int xSrc, int ySrc, bool bCopyAlpha);
+WKE_API void wkePaint2(wkeWebView webView, void* bits,int pitch);
 
 WKE_API bool wkeCanGoBack(wkeWebView webView);
 WKE_API bool wkeGoBack(wkeWebView webView);
@@ -400,7 +397,4 @@ WKE_API void jsGC(); //garbage collect
 
 #ifdef __cplusplus
 }
-#endif
-
-
 #endif

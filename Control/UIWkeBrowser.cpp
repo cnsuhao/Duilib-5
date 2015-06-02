@@ -1,16 +1,18 @@
 #include "StdAfx.h"
 #include "UIWkeBrowser.h"
-/*#pragma comment(lib,"wke.lib")*/
 
 namespace DuiLib
 {
-	CWkeBrowserUI::CWkeBrowserUI(void)
-	:m_webView(NULL)
+	CWkeBrowserUI::CWkeBrowserUI()
+		: m_nButtonState(0)
+		, m_fZoom(1.0)
 	{
+		m_pWebView = NULL;//
 	}
 
 	CWkeBrowserUI::~CWkeBrowserUI(void)
 	{
+
 	}
 
 	LPCTSTR CWkeBrowserUI::GetClass() const
@@ -21,195 +23,97 @@ namespace DuiLib
 	LPVOID CWkeBrowserUI::GetInterface(LPCTSTR pstrName)
 	{
 		if( _tcscmp(pstrName, DUI_CTR_WKEBROWSER) == 0 ) return static_cast<CWkeBrowserUI*>(this);
-		return CControlUI::GetInterface(pstrName);
+		else
+			return CControlUI::GetInterface(pstrName);
 	}
 
 	void CWkeBrowserUI::DoEvent(TEventUI& event)
 	{
-		bool handled = true;
-		if (m_webView == NULL)
-			return CControlUI::DoEvent(event);
-
-		if (event.Type == UIEVENT_TIMER){
-			m_webView->tick();
-		}
-		else if (event.Type == UIEVENT_BUTTONDOWN){
-			m_webView->focus();
-			int x = GET_X_LPARAM(event.lParam);
-			int y = GET_Y_LPARAM(event.lParam);
-
-			unsigned int flags = 0;
-
-			if (event.wParam & MK_CONTROL)
-				flags |= WKE_CONTROL;
-			if (event.wParam & MK_SHIFT)
-				flags |= WKE_SHIFT;
-
-			if (event.wParam & MK_LBUTTON)
-				flags |= WKE_LBUTTON;
-			if (event.wParam & MK_MBUTTON)
-				flags |= WKE_MBUTTON;
-			if (event.wParam & MK_RBUTTON)
-				flags |= WKE_RBUTTON;
-
-			x -=m_rcPaint.left;
-			y -=m_rcPaint.top;
-
-			handled = m_webView->mouseEvent(WM_LBUTTONDOWN, x, y, flags);
-		}
-		else if (event.Type == UIEVENT_BUTTONUP){
-			int x = GET_X_LPARAM(event.lParam);
-			int y = GET_Y_LPARAM(event.lParam);
-
-			unsigned int flags = 0;
-
-			if (event.wParam & MK_CONTROL)
-				flags |= WKE_CONTROL;
-			if (event.wParam & MK_SHIFT)
-				flags |= WKE_SHIFT;
-
-			if (event.wParam & MK_LBUTTON)
-				flags |= WKE_LBUTTON;
-			if (event.wParam & MK_MBUTTON)
-				flags |= WKE_MBUTTON;
-			if (event.wParam & MK_RBUTTON)
-				flags |= WKE_RBUTTON;
-
-			x -=m_rcPaint.left;
-			y -=m_rcPaint.top;
-
-			handled = m_webView->mouseEvent(WM_LBUTTONUP, x, y, flags);
-		}
-		else if (event.Type == UIEVENT_MOUSEMOVE){
-			int x = GET_X_LPARAM(event.lParam);
-			int y = GET_Y_LPARAM(event.lParam);
-
-			unsigned int flags = 0;
-
-			if (event.wParam & MK_CONTROL)
-				flags |= WKE_CONTROL;
-			if (event.wParam & MK_SHIFT)
-				flags |= WKE_SHIFT;
-
-			if (event.wParam & MK_LBUTTON)
-				flags |= WKE_LBUTTON;
-			if (event.wParam & MK_MBUTTON)
-				flags |= WKE_MBUTTON;
-			if (event.wParam & MK_RBUTTON)
-				flags |= WKE_RBUTTON;
-
-			x -=m_rcPaint.left;
-			y -=m_rcPaint.top;
-			handled = m_webView->mouseEvent(WM_MOUSEMOVE, x, y, flags);
-			
-		}
-		else if (event.Type == UIEVENT_RBUTTONDOWN){
-			m_webView->focus();
-			int x = GET_X_LPARAM(event.lParam);
-			int y = GET_Y_LPARAM(event.lParam);
-
-			unsigned int flags = 0;
-
-			if (event.wParam & MK_CONTROL)
-				flags |= WKE_CONTROL;
-			if (event.wParam & MK_SHIFT)
-				flags |= WKE_SHIFT;
-
-			if (event.wParam & MK_LBUTTON)
-				flags |= WKE_LBUTTON;
-			if (event.wParam & MK_MBUTTON)
-				flags |= WKE_MBUTTON;
-			if (event.wParam & MK_RBUTTON)
-				flags |= WKE_RBUTTON;
-			x -=m_rcPaint.left;
-			y -=m_rcPaint.top;
-			handled = m_webView->mouseEvent(WM_RBUTTONDOWN, x, y, flags);
-		}
-		else if (event.Type == UIEVENT_RBUTTONUP){
-			int x = GET_X_LPARAM(event.lParam);
-			int y = GET_Y_LPARAM(event.lParam);
-
-			unsigned int flags = 0;
-
-			if (event.wParam & MK_CONTROL)
-				flags |= WKE_CONTROL;
-			if (event.wParam & MK_SHIFT)
-				flags |= WKE_SHIFT;
-
-			if (event.wParam & MK_LBUTTON)
-				flags |= WKE_LBUTTON;
-			if (event.wParam & MK_MBUTTON)
-				flags |= WKE_MBUTTON;
-			if (event.wParam & MK_RBUTTON)
-				flags |= WKE_RBUTTON;
-			x -=m_rcPaint.left;
-			y -=m_rcPaint.top;
-			handled = m_webView->mouseEvent(WM_RBUTTONUP, x, y, flags);
-		}
-		else if (event.Type == UIEVENT_SCROLLWHEEL){
-			POINT pt ;
-			pt.x = event.ptMouse.x;
-			pt.y = event.ptMouse.y;
-			pt.x -= m_rcPaint.left;
-			pt.y -= m_rcPaint.top;
-			ScreenToClient(m_pManager->GetPaintWindow(), &pt);
-
-			int delta = GET_WHEEL_DELTA_WPARAM(event.wParam);
-
-			unsigned int flags = 0;
-
-			if (event.wParam & MK_CONTROL)
-				flags |= WKE_CONTROL;
-			if (event.wParam & MK_SHIFT)
-				flags |= WKE_SHIFT;
-
-			if (event.wParam & MK_LBUTTON)
-				flags |= WKE_LBUTTON;
-			if (event.wParam & MK_MBUTTON)
-				flags |= WKE_MBUTTON;
-			if (event.wParam & MK_RBUTTON)
-				flags |= WKE_RBUTTON;
-
-			handled = m_webView->mouseWheel(pt.x,pt.y, delta, flags);
-		}
-		else if (event.Type == UIEVENT_KEYDOWN){
-			unsigned int virtualKeyCode = event.wParam;
+		if (event.Type == UIEVENT_SETFOCUS){
+			m_pWebView->focus(); 
+		}else if (event.Type == UIEVENT_KILLFOCUS){
+			m_pWebView->unfocus();
+		}else if (event.Type == UIEVENT_TIMER){
+			m_pWebView->tick();
+		}else if (event.Type == UIEVENT_WINDOWSIZE){
+			m_pWebView->resize(GET_X_LPARAM(event.lParam), GET_Y_LPARAM(event.lParam)); 
+		}else if (event.Type == UIEVENT_CHAR){
 			unsigned int flags = 0;
 			if (HIWORD(event.lParam) & KF_REPEAT)
 				flags |= WKE_REPEAT;
 			if (HIWORD(event.lParam) & KF_EXTENDED)
 				flags |= WKE_EXTENDED;
 
-			handled = m_webView->keyDown(virtualKeyCode, flags, false);
-		}
-		else if (event.Type == UIEVENT_KEYUP){
-			unsigned int virtualKeyCode = event.wParam;
+			m_pWebView->keyPress(event.chKey, flags, false);
+		}else if (event.Type == UIEVENT_KEYDOWN){
 			unsigned int flags = 0;
 			if (HIWORD(event.lParam) & KF_REPEAT)
 				flags |= WKE_REPEAT;
 			if (HIWORD(event.lParam) & KF_EXTENDED)
 				flags |= WKE_EXTENDED;
 
-			handled = m_webView->keyUp(virtualKeyCode, flags, false);
-		}
-		else if (event.Type == UIEVENT_CHAR){
-			unsigned int charCode = event.chKey;
+			m_pWebView->keyDown(event.chKey, flags, false);
+			if ( event.chKey == VK_F5 )
+				Refresh();
+			else if(event.chKey == _T('0') && MK_CONTROL & event.wKeyState)
+				SetZoomFactor(1.0);
+			else if(event.chKey == VK_OEM_PLUS && MK_CONTROL & event.wKeyState)
+				SetZoomFactor(1.5);
+		}else if (event.Type == UIEVENT_KEYUP){
 			unsigned int flags = 0;
 			if (HIWORD(event.lParam) & KF_REPEAT)
 				flags |= WKE_REPEAT;
 			if (HIWORD(event.lParam) & KF_EXTENDED)
 				flags |= WKE_EXTENDED;
 
-			handled = m_webView->keyPress(charCode, flags, false);
-		}
-		else if (event.Type == UIEVENT_IME_STARTCOMPOSITION){
-			wkeRect caret = m_webView->getCaret();
+			m_pWebView->keyUp(event.chKey, flags, false);
+		}else if (event.Type == UIEVENT_CONTEXTMENU){
+
+			m_pWebView->contextMenuEvent(event.ptMouse.x, event.ptMouse.y, m_nButtonState);
+		}else if (event.Type == UIEVENT_MOUSEMOVE){
+
+			MouseEvent(WM_MOUSEMOVE,event);
+		}else if (event.Type == UIEVENT_BUTTONDOWN){
+			HWND hWnd=m_pManager->GetPaintWindow();
+			::SetFocus(hWnd);
+			SetCapture(hWnd);
+			m_nButtonState |= MK_LBUTTON;
+
+			MouseEvent(WM_LBUTTONDOWN,event);
+		}else if (event.Type == UIEVENT_BUTTONUP){
+			ReleaseCapture();
+			m_nButtonState &= ~MK_LBUTTON;
+
+			MouseEvent(WM_LBUTTONUP,event);
+		}else if (event.Type == UIEVENT_RBUTTONUP){
+			m_nButtonState &= ~MK_RBUTTON;
+
+			MouseEvent(WM_RBUTTONUP,event);
+		}else if (event.Type == UIEVENT_RBUTTONDOWN){
+			m_nButtonState |= MK_RBUTTON;
+
+			MouseEvent(WM_RBUTTONDOWN,event);
+		}else if (event.Type == UIEVENT_DBLCLICK){
+
+			MouseEvent(WM_LBUTTONDBLCLK,event);
+		}else if (event.Type == UIEVENT_SCROLLWHEEL){
+
+			POINT pt = { GET_X_LPARAM(event.lParam), GET_Y_LPARAM(event.lParam) };
+			::ScreenToClient(m_pManager->GetPaintWindow(), &pt);
+			pt.x -= m_rcItem.left;
+			pt.y -= m_rcItem.top;
+			int nFlag=GET_X_LPARAM(event.wParam);
+			int delta = (nFlag==SB_LINEDOWN)?-WHEEL_DELTA:WHEEL_DELTA;
+
+			m_pWebView->mouseWheel(pt.x, pt.y, delta, m_nButtonState);
+		}else if (event.Type == UIEVENT_IME_STARTCOMPOSITION){
+			wkeRect caret = m_pWebView->getCaret();
 
 			CANDIDATEFORM form;
 			form.dwIndex = 0;
 			form.dwStyle = CFS_EXCLUDE;
-			form.ptCurrentPos.x = caret.x ;
-			form.ptCurrentPos.y = caret.y + caret.h;
+			form.ptCurrentPos.x = caret.x + m_rcItem.left;
+			form.ptCurrentPos.y = caret.y + caret.h + m_rcItem.top;
 			form.rcArea.top = caret.y + m_rcPaint.top;
 			form.rcArea.bottom = caret.y + caret.h +m_rcPaint.top;
 			form.rcArea.left = caret.x +m_rcPaint.left;
@@ -218,63 +122,132 @@ namespace DuiLib
 			HIMC hIMC = ImmGetContext(m_pManager->GetPaintWindow());
 			ImmSetCandidateWindow(hIMC, &form);
 			ImmReleaseContext(m_pManager->GetPaintWindow(), hIMC);
-		}
-		else if (event.Type ==UIEVENT_SETFOCUS){
-			m_webView->focus();
-		}
-		else if (event.Type == UIEVENT_KILLFOCUS){
-			m_webView->unfocus();
-		}
-
-		if (!handled)
-		{
-			//CControlUI::DoEvent(event);
-		}
+		}else
+			CControlUI::DoEvent(event); 
 	}
 
-	void CWkeBrowserUI::PaintBkImage(HDC hDC)
+	void CWkeBrowserUI::MouseEvent(UINT uMsg,TEventUI& event)
 	{
-		CControlUI::PaintStatusImage(hDC);
-		CDuiRect rect(m_rcItem);
-		if (m_webView)
-			m_webView->paint(hDC,rect.left,rect.top,rect.GetWidth(),rect.GetHeight(),0,0,true);
+		if (m_pWebView)
+			m_pWebView->mouseEvent(uMsg,event.ptMouse.x-m_rcItem.left,event.ptMouse.y-m_rcItem.top, m_nButtonState);
+	}
+
+	void CWkeBrowserUI::SetAttribute(LPCTSTR pstrName, LPCTSTR pstrValue)
+	{
+		if (_tcscmp(pstrName,_T("url")) == 0)	SetUrl(pstrValue);
+		else if (_tcscmp(pstrName,_T("editable")) == 0)	SetEditable(_tcscmp(pstrValue,_T("true")) == 0);
+		else
+			CControlUI::SetAttribute(pstrName,pstrValue);
+	}
+
+	void CWkeBrowserUI::DoPaint(HDC hDC, const RECT& rcPaint)
+	{
+		if (m_pWebView == NULL)
+			return;
+
+		if (m_pWebView->isLoadComplete())
+			BitBlt(hDC,m_rcItem.left,m_rcItem.top,m_rcItem.right - m_rcItem.left,
+				m_rcItem.bottom - m_rcItem.top, m_pWebView->getViewDC(),0,0,SRCCOPY);
+		else
+			CRenderEngine::DrawText(hDC,m_pManager,m_rcItem,_T("Мгдижа..."),0xFF000000,0,DT_SINGLELINE | DT_VCENTER | DT_CENTER);
 	}
 
 	void CWkeBrowserUI::SetPos(RECT rc)
 	{
 		CControlUI::SetPos(rc);
-		CDuiRect rect(m_rcItem);
-		if (m_webView)
+		if (m_pWebView)
 		{
-			m_webView->resize(rect.GetWidth(),rect.GetHeight());
-			m_webView->tick();
+			m_pWebView->resize(m_rcItem.right-m_rcItem.left,m_rcItem.bottom-m_rcItem.top);
+			m_pWebView->tick();
 		}
 	}
+
 	void CWkeBrowserUI::InitBrowser(wkeWebView pWebView,UINT nTimerID)
 	{
-		if (m_webView != NULL)
+		m_pWebView = pWebView;
+		if (m_pWebView == NULL)
 			return;
 
-		m_webView = pWebView;
-		m_webView->setTransparent(false);
+		m_pWebView->setTransparent(false);
+		m_pWebView->setBufHandler((_wkeBufHandler*)this);
 
-		m_webView->setBufHandler((_wkeBufHandler*)this);
+		m_pWebView->setPaintWnd(m_pManager->GetPaintWindow());
 
 		CDuiRect rect(m_rcItem);
-		m_webView->resize(rect.GetWidth(),rect.GetHeight());
+		m_pWebView->resize(rect.GetWidth(),rect.GetHeight());
 
 		m_pManager->SetTimer(this,nTimerID,50);
-
-	}
-	void CWkeBrowserUI::onBufUpdated (const HDC hdc,int x, int y, int cx, int cy)
-	{
-		Invalidate();
+		if (m_strUrl.IsEmpty() == false)
+			Navigate(m_strUrl);
 	}
 
-	void CWkeBrowserUI::LoadUrl(LPCTSTR szUrl)
+	void CWkeBrowserUI::onBufUpdated(const HDC hdc,int x, int y, int cx, int cy)
 	{
-		ASSERT(m_webView);
-		if (m_webView)
-			m_webView->loadURL(szUrl);
+		RECT rcValide={ x, y, x+cx, y+cy };
+		::OffsetRect(&rcValide, m_rcItem.left, m_rcItem.top);
+		HWND hWnd=m_pManager->GetPaintWindow();
+		::InvalidateRect(hWnd, &rcValide, TRUE);
+	}
+
+	void CWkeBrowserUI::Navigate(LPCTSTR lpszUrl)
+	{
+		if (m_pWebView)
+			m_pWebView->loadURL(lpszUrl);
+	}
+
+	void CWkeBrowserUI::SetUrl(LPCTSTR lpszUrl)
+	{
+		if (m_strUrl == lpszUrl)
+			return;
+		m_strUrl = lpszUrl;
+	}
+
+	void CWkeBrowserUI::Refresh()
+	{
+		if (m_pWebView)
+			m_pWebView->reload();
+	}
+
+	bool CWkeBrowserUI::CanGoBack() const
+	{
+		return m_pWebView?m_pWebView->canGoBack():false;
+	}
+
+	bool CWkeBrowserUI::GoBack()
+	{
+		return m_pWebView?m_pWebView->goBack():false;
+	}
+
+	bool CWkeBrowserUI::CanGoForward() const
+	{
+		return m_pWebView?m_pWebView->canGoForward():false;
+	}
+
+	bool CWkeBrowserUI::GoForward()
+	{
+		return m_pWebView?m_pWebView->goForward():false;
+	}
+
+	void CWkeBrowserUI::SetZoomFactor(float factor)
+	{
+		if (m_pWebView)
+			m_pWebView->setZoomFactor(factor);
+	}
+
+	float CWkeBrowserUI::GetZoomFactor()
+	{
+		return m_fZoom;
+	}
+
+	void CWkeBrowserUI::SetEditable(bool bEditable /*= true*/)
+	{
+		if (m_pWebView)
+			m_pWebView->setEditable(bEditable);
+	}
+
+	void CWkeBrowserUI::SetClientHandler(PwkeClientHandler pwkeClientHandler)
+	{
+		if (m_pWebView)
+			m_pWebView->setClientHandler(pwkeClientHandler);
 	}
 }
