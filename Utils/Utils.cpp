@@ -796,8 +796,21 @@ namespace DuiLib
         va_end(Args);
 
         return nRet;
-
     }
+
+	int CDuiString::AppendFormat(LPCTSTR pstrFormat, ...)
+	{
+		int nRet;
+		va_list Args;
+
+		va_start(Args, pstrFormat);
+		CDuiString strTmp;
+		nRet = strTmp.Format(pstrFormat, Args);
+		Append(strTmp);
+		va_end(Args);
+
+		return GetLength();
+	}
 
 	int CDuiString::SmallFormat(LPCTSTR pstrFormat, ...)
 	{

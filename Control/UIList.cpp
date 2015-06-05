@@ -1724,37 +1724,27 @@ void CListElementUI::DrawItemBk(HDC hDC, const RECT& rcItem)
     TListInfoUI* pInfo = m_pOwner->GetListInfo();
     DWORD iBackColor = 0;
     if( !pInfo->bAlternateBk || m_iIndex % 2 == 0 ) iBackColor = pInfo->dwBkColor;
-    if( (m_uButtonState & UISTATE_HOT) != 0 ) {
-        iBackColor = pInfo->dwHotBkColor;
-    }
-    if( IsSelected() ) {
-        iBackColor = pInfo->dwSelectedBkColor;
-    }
-    if( !IsEnabled() ) {
-        iBackColor = pInfo->dwDisabledBkColor;
-    }
-
-    if ( iBackColor != 0 ) {
-        CRenderEngine::DrawColor(hDC, m_rcItem, GetAdjustColor(iBackColor));
-    }
 
     if( !IsEnabled() ) {
         if( !pInfo->sDisabledImage.IsEmpty() ) {
             if( !DrawImage(hDC, (LPCTSTR)pInfo->sDisabledImage) ) pInfo->sDisabledImage.Empty();
-            else return;
         }
+		else 
+			CRenderEngine::DrawColor(hDC, m_rcItem, GetAdjustColor(pInfo->dwDisabledBkColor));
     }
     if( IsSelected() ) {
         if( !pInfo->sSelectedImage.IsEmpty() ) {
-            if( !DrawImage(hDC, (LPCTSTR)pInfo->sSelectedImage) ) pInfo->sSelectedImage.Empty();
-            else return;
+            if( !DrawImage(hDC, (LPCTSTR)pInfo->sSelectedImage) ) pInfo->sSelectedImage.Empty();	
         }
+		else
+			CRenderEngine::DrawColor(hDC, m_rcItem, GetAdjustColor(pInfo->dwSelectedBkColor));
     }
     if( (m_uButtonState & UISTATE_HOT) != 0 ) {
         if( !pInfo->sHotImage.IsEmpty() ) {
             if( !DrawImage(hDC, (LPCTSTR)pInfo->sHotImage) ) pInfo->sHotImage.Empty();
-            else return;
         }
+		else
+			CRenderEngine::DrawColor(hDC, m_rcItem, GetAdjustColor(pInfo->dwHotBkColor));
     }
 
     if( !m_sBkImage.IsEmpty() ) {
@@ -1762,13 +1752,11 @@ void CListElementUI::DrawItemBk(HDC hDC, const RECT& rcItem)
             if( !DrawImage(hDC, (LPCTSTR)m_sBkImage) ) m_sBkImage.Empty();
         }
     }
-
-    if( m_sBkImage.IsEmpty() ) {
-        if( !pInfo->sBkImage.IsEmpty() ) {
-            if( !DrawImage(hDC, (LPCTSTR)pInfo->sBkImage) ) pInfo->sBkImage.Empty();
-            else return;
-        }
-    }
+	else if( !pInfo->sBkImage.IsEmpty() ) {
+        if( !DrawImage(hDC, (LPCTSTR)pInfo->sBkImage) ) pInfo->sBkImage.Empty();
+        else if (iBackColor != 0)
+			CRenderEngine::DrawColor(hDC, m_rcItem, GetAdjustColor(iBackColor));			   
+	}
 
     if ( pInfo->dwLineColor != 0 ) {
         RECT rcLine = { m_rcItem.left, m_rcItem.bottom - 1, m_rcItem.right, m_rcItem.bottom - 1 };
