@@ -609,7 +609,7 @@ namespace DuiLib
 		rcSelection.left += m_rcItem.left + m_rcTextPadding.left;
 		rcSelection.top += m_rcItem.top + m_rcTextPadding.top;
 		rcSelection.right = rcSelection.left +nWidth;
-		rcSelection.bottom = rcSelection.top + nHeight - 1;
+		rcSelection.bottom = rcSelection.top + nHeight ;
 	}
 
 	int CEditUI2::GetCaretPos(HDC hDC,const CDuiString& sText)
@@ -868,7 +868,29 @@ namespace DuiLib
 
 	void CEditUI2::OnCopy(int nPos,int nLen)
 	{
+		BOOL bSuccess = FALSE;
+		HANDLE hMem = NULL;
+		do 
+		{
+			bSuccess = OpenClipboard(m_pManager->GetPaintWindow());
+			if (bSuccess == FALSE)
+				break;
 
+			if (EmptyClipboard() == 0)
+				break;
+
+			hMem = GlobalAlloc(GMEM_MOVEABLE,(nLen+1)*sizeof(TCHAR));
+			if (hMem == NULL)
+				break;
+
+			LPTSTR lpText = (LPTSTR)GlobalLock(hMem);
+			_tcscpy_s(lpText,nLen,CDuiString((LPCTSTR)m_sText+nPos,nLen));
+			GlobalUnlock(hMem);
+
+		} while (FALSE);
+		
+		if (bSuccess)
+			CloseClipboard();
 	}
 
 	void CEditUI2::OnPaste(int nPos)

@@ -147,6 +147,7 @@ public:
     void SetDisabledItemBkColor(DWORD dwBkColor);
     void SetDisabledItemImage(LPCTSTR pStrImage);
     void SetItemLineColor(DWORD dwLineColor);
+	void SetItemColLine(bool bColLine = true);
     bool IsItemShowHtml();
     void SetItemShowHtml(bool bShowHtml = true);
 	RECT GetItemTextPadding() const;

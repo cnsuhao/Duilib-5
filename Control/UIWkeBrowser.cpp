@@ -77,14 +77,14 @@ namespace DuiLib
 
 			MouseEvent(WM_MOUSEMOVE,event);
 		}else if (event.Type == UIEVENT_BUTTONDOWN){
-			HWND hWnd=m_pManager->GetPaintWindow();
-			::SetFocus(hWnd);
-			SetCapture(hWnd);
+//			HWND hWnd=m_pManager->GetPaintWindow();
+//// 			::SetFocus(hWnd);
+//// 			SetCapture(hWnd);
 			m_nButtonState |= MK_LBUTTON;
 
 			MouseEvent(WM_LBUTTONDOWN,event);
 		}else if (event.Type == UIEVENT_BUTTONUP){
-			ReleaseCapture();
+			//ReleaseCapture();
 			m_nButtonState &= ~MK_LBUTTON;
 
 			MouseEvent(WM_LBUTTONUP,event);
@@ -176,7 +176,7 @@ namespace DuiLib
 		CDuiRect rect(m_rcItem);
 		m_pWebView->resize(rect.GetWidth(),rect.GetHeight());
 
-		m_pManager->SetTimer(this,nTimerID,15);
+		m_pManager->SetTimer(this,nTimerID,50);
 		if (m_strUrl.IsEmpty() == false)
 			Navigate(m_strUrl);
 	}

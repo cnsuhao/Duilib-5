@@ -2271,29 +2271,32 @@ void CRenderEngine::CheckAalphaColor(DWORD& dwColor)
 	}
 }
 
-void CRenderEngine::ClearAalphaPixel(LPBYTE pBits, int bitsWidth, int left, int top, int right, int bottom)
+void CRenderEngine::ClearAalphaPixel(LPBYTE pBits, int bitsWidth, LPRECT rc)
 {
-	for(int i = top; i < bottom; ++i)
-	{
-		for(int j = left; j < right; ++j)
-		{
-			int x = (i*bitsWidth + j) * 4;
-			*((unsigned int*)&pBits[x]) = 0;
-		}
-	}
+ 	if(!pBits)
+ 		return;
+ 
+ 	for(int i = rc->top; i < rc->bottom; ++i)
+ 	{
+ 		for(int j = rc->left; j < rc->right; ++j)
+ 		{
+ 			int x = (i*bitsWidth + j) * 4;
+ 			*((unsigned int*)&pBits[x]) = 0;
+ 		}
+ 	}
 }
 
-void CRenderEngine::RestoreAalphaColor(LPBYTE pBits, int bitsWidth, int left, int top, int right, int bottom)
+void CRenderEngine::RestoreAalphaColor(LPBYTE pBits, int bitsWidth, LPRECT rc)
 {
-	for(int i = top; i < bottom; ++i)
-	{
-		for(int j = left; j < right; ++j)
-		{
-			int x = (i*bitsWidth + j) * 4;
-			if((pBits[x + 3] == 0)&& (pBits[x + 0] != 0 || pBits[x + 1] != 0|| pBits[x + 2] != 0))
-				pBits[x + 3] = 255;	
-		}
-	}
+ 	for(int i = rc->top; i < rc->bottom; ++i)
+ 	{
+ 		for(int j = rc->left; j < rc->right; ++j)
+ 		{
+ 			int x = (i*bitsWidth + j) * 4;
+ 			if((pBits[x + 3] == 0)&& (pBits[x + 0] != 0 || pBits[x + 1] != 0|| pBits[x + 2] != 0))
+ 				pBits[x + 3] = 255;	
+ 		}
+ 	}
 }
 
 #ifdef RENDER_GDIPLUS

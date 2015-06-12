@@ -729,33 +729,22 @@ void CControlUI::Invalidate()
 {
     if( !IsVisible() ) return;
 
-    RECT invalidateRc = m_rcItem;
+	RECT invalidateRc = m_rcItem;
 
-    CControlUI* pParent = this;
-    RECT rcTemp;
-    RECT rcParent;
-    while( pParent = pParent->GetParent() )
-    {
-        rcTemp = invalidateRc;
-        rcParent = pParent->GetPos();
-        if( !::IntersectRect(&invalidateRc, &rcTemp, &rcParent) ) 
-        {
-            return;
-        }
-    }
-
-    if( m_pManager != NULL ) 
+	CControlUI* pParent = this;
+	RECT rcTemp;
+	RECT rcParent;
+	while( pParent = pParent->GetParent() )
 	{
-		//////////////////////////////////////////////////////////////////////////
-		//Added by gechunping  on 2014-2-15
-		invalidateRc.left-=2;
-		invalidateRc.top-=2;
-		invalidateRc.right+=2;
-		invalidateRc.bottom+=2;
-		//////////////////////////////////////////////////////////////////////////
-		//Added by gechunping  on 2014-2-15
-		m_pManager->Invalidate(invalidateRc);
+		rcTemp = invalidateRc;
+		rcParent = pParent->GetPos();
+		if( !::IntersectRect(&invalidateRc, &rcTemp, &rcParent) ) 
+		{
+			return;
+		}
 	}
+
+	if( m_pManager != NULL ) m_pManager->Invalidate(invalidateRc);
 }
 
 bool CControlUI::IsUpdateNeeded() const

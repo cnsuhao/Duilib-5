@@ -117,6 +117,9 @@ public:
     virtual void OnTxNotify(DWORD iNotify, void *pv);
 
     void SetScrollPos(SIZE szPos);
+	void SetCaretPos(int x,int y);
+	void CreateCaret(int xWidth,int yHeight);
+	BOOL ShowCaret(BOOL fShow);
     void LineUp();
     void LineDown();
     void PageUp();
@@ -152,7 +155,6 @@ public:
 	void SetTipValueColor(LPCTSTR pStrColor);
 	DWORD GetTipValueColor();
 
-
     void SetAttribute(LPCTSTR pstrName, LPCTSTR pstrValue);
 
     LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, bool& bHandled);
@@ -183,6 +185,8 @@ protected:
 	UINT m_chLeadByte; // use when we are in _fAccumulateDBC mode
 
 	RECT m_rcTextPadding;
+	RECT m_rcPos;
+	BOOL m_bShowCaret;
 	CDuiString m_sTipValue;
 	DWORD m_dwTipValueColor;
 	UINT m_uButtonState;

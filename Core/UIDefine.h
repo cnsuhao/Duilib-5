@@ -280,5 +280,9 @@ protected:                                                                \
 #define	WM_BASE_ID				(WM_USER+0x100)
 #define	WM_MENUCLICK		WM_BASE_ID+0x1		//菜单鼠标点击消息
 
+//自定义定时器ID
+
+#define	 IME_RICHEDIT_BLINK_TIMER_ID		0x1000		//Richedit定时器ID
+
 }// namespace DuiLib
 

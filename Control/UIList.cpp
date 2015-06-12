@@ -572,6 +572,12 @@ void CListUI::SetItemLineColor(DWORD dwLineColor)
     Invalidate();
 }
 
+void CListUI::SetItemColLine(bool bColLine /*= true*/)
+{
+	m_ListInfo.bShowColumnLine = bColLine;
+	Invalidate();
+}
+
 bool CListUI::IsItemShowHtml()
 {
     return m_ListInfo.bShowHtml;
@@ -744,6 +750,7 @@ void CListUI::SetAttribute(LPCTSTR pstrName, LPCTSTR pstrValue)
         DWORD clrColor = _tcstoul(pstrValue, &pstr, 16);
         SetItemLineColor(clrColor);
     }
+	else if( _tcscmp(pstrName,_T("itemcolline")) == 0)	SetItemColLine(_tcscmp(pstrValue,_T("true")) == 0);
     else if( _tcscmp(pstrName, _T("itemshowhtml")) == 0 ) SetItemShowHtml(_tcscmp(pstrValue, _T("true")) == 0);
     else CVerticalLayoutUI::SetAttribute(pstrName, pstrValue);
 }
@@ -869,6 +876,7 @@ BOOL CListBodyUI::SortItems(PULVCompareFunc pfnCompare, UINT_PTR dwData)
 	if (!pfnCompare)
 		return FALSE;
 	m_pCompareFunc = pfnCompare;
+	m_compareData = dwData;
 	CControlUI **pData = (CControlUI **)m_items.GetData();
 	qsort_s(m_items.GetData(), m_items.GetSize(), sizeof(CControlUI*), CListBodyUI::ItemComareFunc, this);	
 	IListItemUI *pItem = NULL;
@@ -2005,10 +2013,10 @@ void CListTextElementUI::DoEvent(TEventUI& event)
             }
         }
 
-        if(m_nHoverLink != nHoverLink) {
+        //if(m_nHoverLink != nHoverLink) {
             Invalidate();
             m_nHoverLink = nHoverLink;
-        }
+        //}
     }
     if( m_nLinks > 0 && event.Type == UIEVENT_MOUSELEAVE ) {
         if(m_nHoverLink != -1) {

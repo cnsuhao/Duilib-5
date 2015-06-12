@@ -1197,11 +1197,15 @@ void CTxtWinHost::TxViewChange(BOOL fUpdate)
 
 BOOL CTxtWinHost::TxCreateCaret(HBITMAP hbmp, INT xWidth, INT yHeight)
 {
+	if (m_re->GetManager()->IsBackgroundTransparent())
+		m_re->CreateCaret(xWidth,yHeight);
 	return ::CreateCaret(m_re->GetManager()->GetPaintWindow(), hbmp, xWidth, yHeight);
 }
 
 BOOL CTxtWinHost::TxShowCaret(BOOL fShow)
 {
+	if (m_re->GetManager()->IsBackgroundTransparent())
+		return	m_re->ShowCaret(fShow);
 	if(fShow)
 		return ::ShowCaret(m_re->GetManager()->GetPaintWindow());
 	else
@@ -1210,6 +1214,8 @@ BOOL CTxtWinHost::TxShowCaret(BOOL fShow)
 
 BOOL CTxtWinHost::TxSetCaretPos(INT x, INT y)
 {
+	if (m_re->GetManager()->IsBackgroundTransparent())
+		m_re->SetCaretPos(x,y);
 	return ::SetCaretPos(x, y);
 }
 
@@ -1479,6 +1485,7 @@ void CTxtWinHost::SetFont(HFONT hFont)
 
 void CTxtWinHost::SetColor(DWORD dwColor)
 {
+	CRenderEngine::CheckAalphaColor(dwColor);
     cf.crTextColor = RGB(GetBValue(dwColor), GetGValue(dwColor), GetRValue(dwColor));
     pserv->OnTxPropertyBitsChange(TXTBIT_CHARFORMATCHANGE, 
         TXTBIT_CHARFORMATCHANGE);
@@ -1723,7 +1730,8 @@ void CTxtWinHost::SetParaFormat(PARAFORMAT2 &p)
 CRichEditUI::CRichEditUI() :m_pCallback(NULL), m_pTwh(NULL),m_pRichEditOle(NULL), m_bVScrollBarFixing(false), m_bWantTab(true), m_bWantReturn(true), 
     m_bWantCtrlReturn(true), m_bRich(true), m_bReadOnly(false), m_bWordWrap(false), m_dwTextColor(0), m_iFont(-1), 
     m_iLimitText(cInitTextMax), m_lTwhStyle(ES_MULTILINE), m_bInited(false), m_chLeadByte(0),m_uButtonState(0),
-	m_dwTipValueColor(0xFFBAC0C5)
+	m_dwTipValueColor(0xFFBAC0C5),
+	m_bShowCaret(FALSE)
 {
 
 #ifndef _UNICODE
@@ -1732,6 +1740,8 @@ CRichEditUI::CRichEditUI() :m_pCallback(NULL), m_pTwh(NULL),m_pRichEditOle(NULL)
 	m_fAccumulateDBC= false;
 	::ZeroMemory(&m_rcTextPadding, sizeof(m_rcTextPadding));
 #endif
+
+	ZeroMemory(&m_rcPos,sizeof(RECT));
 }
 
 CRichEditUI::~CRichEditUI()
@@ -1948,6 +1958,7 @@ void CRichEditUI::SetText(LPCTSTR pstrText)
 
 	m_sText = pstrText;
 	if( !m_pTwh ) return;
+	m_pTwh->SetColor(m_dwTextColor);
 	SetSel(0, -1);
 	ReplaceSel(pstrText, FALSE);
 }
@@ -2401,11 +2412,8 @@ void CRichEditUI::DoInit()
         m_pTwh->GetTextServices()->TxSendMessage(EM_SETLANGOPTIONS, 0, 0, &lResult);
         m_pTwh->OnTxInPlaceActivate(NULL);
         m_pManager->AddMessageFilter(this);
-		/*if (GetText() == _T(""))
-		{
-			SetText(m_sTipValue);
-			m_pTwh->SetColor(m_dwTipValueColor);
-		}*/
+		if (IsEnabled() == false)
+			m_pTwh->SetColor(GetManager()->GetDefaultDisabledColor());
     }
 
 	m_bInited= true;
@@ -2449,6 +2457,9 @@ void CRichEditUI::OnTxNotify(DWORD iNotify, void *pv)
 {
 	switch(iNotify)
 	{ 
+	case EN_CHANGE:
+			GetManager()->SendNotify(this, DUI_MSGTYPE_TEXTCHANGED);
+		break;
 	case EN_DROPFILES:   
 	case EN_MSGFILTER:   
 	case EN_OLEOPFAILED:   
@@ -2476,6 +2487,30 @@ void CRichEditUI::OnTxNotify(DWORD iNotify, void *pv)
 		}
 		break;
 	}
+}
+
+BOOL CRichEditUI::ShowCaret(BOOL fShow)
+{
+	if (m_bShowCaret == fShow)
+		return TRUE;
+	m_bShowCaret = fShow;
+	InvalidateRect(m_pManager->GetPaintWindow(),&m_rcPos,FALSE);
+	return TRUE;
+}
+
+void CRichEditUI::SetCaretPos(int x,int y)
+{
+	m_rcPos.left = x;
+	m_rcPos.right += m_rcPos.left;
+
+	m_rcPos.top = y;
+	m_rcPos.bottom += m_rcPos.top;
+}
+
+void CRichEditUI::CreateCaret(int xWidth,int yHeight)
+{
+	m_rcPos.right = xWidth;
+	m_rcPos.bottom = yHeight;
 }
 
 // 多行非rich格式的richedit有一个滚动条bug，在最后一行是空行时，LineDown和SetScrollPos无法滚动到最后
@@ -2578,7 +2613,6 @@ void CRichEditUI::EndRight()
     TxSendMessage(WM_HSCROLL, SB_RIGHT, 0L, 0);
 }
 
-
 void CRichEditUI::DoEvent(TEventUI& event)
 {
     if( !IsMouseEnabled() && event.Type > UIEVENT__MOUSEBEGIN && event.Type < UIEVENT__MOUSEEND ) {
@@ -2593,61 +2627,38 @@ void CRichEditUI::DoEvent(TEventUI& event)
             return;
         }
     }
-    /*if( event.Type == UIEVENT_SETFOCUS ) {
-        if( m_pTwh ) {
-            m_pTwh->OnTxInPlaceActivate(NULL);
-			if (GetText() == m_sTipValue)
-			{
-				SetText(_T(""));
-				m_pTwh->SetColor(m_dwTextColor);
-			}
-            m_pTwh->GetTextServices()->TxSendMessage(WM_SETFOCUS, 0, 0, 0);
-        }
-		m_bFocused = true;
-		Invalidate();
-		return;
-    }
-    if( event.Type == UIEVENT_KILLFOCUS )  {
-        if( m_pTwh ) {
-            m_pTwh->OnTxInPlaceActivate(NULL);
-			if (GetText() == _T(""))
-			{
-				SetText(m_sTipValue);
-				m_pTwh->SetColor(m_dwTipValueColor);
-			}
-            m_pTwh->GetTextServices()->TxSendMessage(WM_KILLFOCUS, 0, 0, 0);
-        }
-		m_bFocused = false;
-		Invalidate();
-		return;
-    }
-    else if( event.Type == UIEVENT_TIMER ) {
-        if( m_pTwh ) {
-            m_pTwh->GetTextServices()->TxSendMessage(WM_TIMER, event.wParam, event.lParam, 0);
-        } 
-    }*/
 	if( event.Type == UIEVENT_SETFOCUS ) {
+		if (GetManager()->IsBackgroundTransparent())
+			GetManager()->SetTimer(this,IME_RICHEDIT_BLINK_TIMER_ID,GetCaretBlinkTime());
 		if( m_pTwh ) {
 			m_pTwh->OnTxInPlaceActivate(NULL);
 			m_pTwh->GetTextServices()->TxSendMessage(WM_SETFOCUS, 0, 0, 0);
 
 			m_bFocused = true;
+			Invalidate();
 			return;
 		}
 	}
 	if( event.Type == UIEVENT_KILLFOCUS )  {
+		if (GetManager()->IsBackgroundTransparent())
+			GetManager()->KillTimer(this);
 		if( m_pTwh ) {
 			m_pTwh->OnTxInPlaceActivate(NULL);
 			m_pTwh->GetTextServices()->TxSendMessage(WM_KILLFOCUS, 0, 0, 0);
-
-			m_bFocused = false;
-			return;
 		}
+		m_bFocused = false;
+		Invalidate();
+		return;
 	}
 	if( event.Type == UIEVENT_TIMER ) {
 		if( m_pTwh ) {
 			m_pTwh->GetTextServices()->TxSendMessage(WM_TIMER, event.wParam, event.lParam, 0);
 		} 
+		if (GetManager()->IsBackgroundTransparent() && event.wParam == IME_RICHEDIT_BLINK_TIMER_ID)
+		{
+			m_bShowCaret = !m_bShowCaret;
+			InvalidateRect(GetManager()->GetPaintWindow(),&m_rcPos,FALSE);
+		}
 	}
 	else if( event.Type == UIEVENT_SCROLLWHEEL ) {
 		if( (event.wKeyState & MK_CONTROL) != 0  ) {
@@ -2978,6 +2989,14 @@ void CRichEditUI::DoPaint(HDC hDC, const RECT& rcPaint)
             m_pHorizontalScrollBar->DoPaint(hDC, rcPaint);
         }
     }
+
+	CHARRANGE chRange = {0};
+	bool bShow = true;
+	if (GetSel(chRange) != false)
+		bShow = chRange.cpMin == chRange.cpMax ? true : false;
+
+	if (bShow && GetManager()->IsBackgroundTransparent() && m_bShowCaret && m_bFocused)
+		CRenderEngine::DrawColor(hDC,m_rcPos,m_dwCaretColor);
 }
 
 void CRichEditUI::SetAttribute(LPCTSTR pstrName, LPCTSTR pstrValue)

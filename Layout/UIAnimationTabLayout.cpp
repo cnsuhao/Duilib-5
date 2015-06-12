@@ -6,7 +6,8 @@
 namespace DuiLib
 {
 	CAnimationTabLayoutUI::CAnimationTabLayoutUI() 
-		: m_nStep(1)
+		: CUIAnimation()
+		, m_nStep(1)
 		, m_pLast(NULL)
 		, m_pControl(NULL)
 		, m_bVertical(false)

@@ -216,6 +216,11 @@ LRESULT WindowImplBase::OnMouseHover(UINT uMsg, WPARAM wParam, LPARAM lParam, BO
 
 LRESULT WindowImplBase::OnSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
+	if (IsWindowVisible(m_hWnd) && m_PaintManager.IsSizeRestored() != true && wParam == SIZE_RESTORED)
+		m_PaintManager.SetSizeType(TSizeParamRestored);
+	else
+		m_PaintManager.SetSizeType(TSizeParamNormal);
+
 	SIZE szRoundCorner = m_PaintManager.GetRoundCorner();
 #if defined(WIN32) && !defined(UNDER_CE)
 	if( !::IsIconic(*this) && (szRoundCorner.cx != 0 || szRoundCorner.cy != 0) ) {
