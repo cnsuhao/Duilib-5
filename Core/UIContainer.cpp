@@ -655,7 +655,6 @@ namespace DuiLib
 
 		CRenderClip clip;
 		CRenderClip::GenerateClip(hDC, rcTemp, clip);
-
 		//////////////////////////////////////////////////////////////////////////
 		///modify by gechunping on 2014-03-31  for paint border on top layer
 		/// orgin is  //CControlUI::DoPaint(hDC, rcPaint);
@@ -728,6 +727,7 @@ namespace DuiLib
 		//////////////////////////////////////////////////////////////////////////
 		///modify by gechunping on 2014-03-31  for paint border on top layer
 		PaintBorder(hDC);
+
 		//////////////////////////////////////////////////////////////////////////
 	}
 

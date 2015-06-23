@@ -727,8 +727,14 @@ bool CPaintManagerUI::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, LR
 			   }
 			   else
 			   {
-				   UnionRect(&rcPaint,&m_rcInvalidate,&rcPaint);
+				   //由于控件在销毁时，可能需要重绘，但是由于窗口大小已经改变，不需要
+				   //超过窗口大小的重绘，否则可能引起异常
+				   //如果代码在这里引起异常，请修改
+				   RECT rcTmp = {0};
+				   IntersectRect(&rcTmp,&rcClient,&m_rcInvalidate);
 				   ZeroMemory(&m_rcInvalidate,sizeof(m_rcInvalidate));
+
+				   UnionRect(&rcPaint,&rcPaint,&rcTmp);
 			   }
 
 			   int nClientWidth = rcClient.right - rcClient.left;
@@ -751,10 +757,11 @@ bool CPaintManagerUI::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, LR
 
 				   ASSERT(m_hDcOffscreen);
 				   ASSERT(m_hbmpOffscreen);
-			   }
+			  } 
 
 			   HBITMAP hOldBitmap = (HBITMAP)::SelectObject(m_hDcOffscreen, m_hbmpOffscreen);
 			   int iSaveDC = ::SaveDC(m_hDcOffscreen);
+
 			   CRenderEngine::ClearAalphaPixel(m_pBmpOffscreenBits, nClientWidth, &rcPaint);
 			   m_pRoot->DoPaint(m_hDcOffscreen, rcPaint);
 			   for(int i = 0; i < m_aPostPaintControls.GetSize(); i++)
@@ -1199,9 +1206,6 @@ bool CPaintManagerUI::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, LR
 			m_pFocus->Event(event);
 		}
 		break;
-// 	case WM_KILLFOCUS:
-// 			SetFocus(NULL);
-/*		break;*/
     default:
         break;
     }

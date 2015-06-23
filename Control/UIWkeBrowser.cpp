@@ -34,7 +34,7 @@ namespace DuiLib
 			m_pWebView->focus(); 
 		}else if (event.Type == UIEVENT_KILLFOCUS){
 			m_pWebView->unfocus();
-		}else if (event.Type == UIEVENT_TIMER){
+		}else if (event.Type == UIEVENT_TIMER){ 
 			m_pWebView->tick();
 		}else if (event.Type == UIEVENT_WINDOWSIZE){
 			m_pWebView->resize(GET_X_LPARAM(event.lParam), GET_Y_LPARAM(event.lParam)); 
@@ -77,23 +77,19 @@ namespace DuiLib
 
 			MouseEvent(WM_MOUSEMOVE,event);
 		}else if (event.Type == UIEVENT_BUTTONDOWN){
-//			HWND hWnd=m_pManager->GetPaintWindow();
-//// 			::SetFocus(hWnd);
-//// 			SetCapture(hWnd);
-			m_nButtonState |= MK_LBUTTON;
+			m_nButtonState |= WKE_LBUTTON;
 
 			MouseEvent(WM_LBUTTONDOWN,event);
 		}else if (event.Type == UIEVENT_BUTTONUP){
-			//ReleaseCapture();
-			m_nButtonState &= ~MK_LBUTTON;
+			m_nButtonState &= ~WKE_LBUTTON;
 
 			MouseEvent(WM_LBUTTONUP,event);
 		}else if (event.Type == UIEVENT_RBUTTONUP){
-			m_nButtonState &= ~MK_RBUTTON;
+			m_nButtonState &= ~WKE_RBUTTON;
 
 			MouseEvent(WM_RBUTTONUP,event);
 		}else if (event.Type == UIEVENT_RBUTTONDOWN){
-			m_nButtonState |= MK_RBUTTON;
+			m_nButtonState |= WKE_RBUTTON;
 
 			MouseEvent(WM_RBUTTONDOWN,event);
 		}else if (event.Type == UIEVENT_DBLCLICK){

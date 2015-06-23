@@ -52,8 +52,8 @@ public:
     void SetColorHSL(bool bColorHSL);
     SIZE GetBorderRound() const;
     void SetBorderRound(SIZE cxyRound);
-	//void SetCaretColor(DWORD dwCaretColor);
-	//DWORD GetCaretColor();
+	void SetCaretColor(DWORD dwCaretColor);
+	DWORD GetCaretColor();
     bool DrawImage(HDC hDC, LPCTSTR pStrImage, LPCTSTR pStrModify = NULL);
 
 	//±ß¿òÏà¹Ø

@@ -114,7 +114,6 @@ protected:
     bool m_bDelayedDestroy;
     bool m_bMouseChildEnabled;
     bool m_bScrollProcess; // ∑¿÷πSetPos—≠ª∑µ˜”√
-
     CScrollBarUI* m_pVerticalScrollBar;
     CScrollBarUI* m_pHorizontalScrollBar;
 };

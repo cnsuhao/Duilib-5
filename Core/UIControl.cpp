@@ -345,16 +345,16 @@ void CControlUI::SetBorderRound(SIZE cxyRound)
     Invalidate();
 }
 
-//void CControlUI::SetCaretColor(DWORD dwCaretColor)
-//{
-//	m_dwCaretColor = dwCaretColor;
-//}
-//
-//DWORD CControlUI::GetCaretColor()
-//{
-//	return m_dwCaretColor;
-//}
-//
+void CControlUI::SetCaretColor(DWORD dwCaretColor)
+{
+	m_dwCaretColor = dwCaretColor;
+}
+
+DWORD CControlUI::GetCaretColor()
+{
+	return m_dwCaretColor;
+}
+
 //bool CControlUI::GetSel(CHARRANGE& CharRange) const
 //{
 //	return false;
@@ -744,7 +744,7 @@ void CControlUI::Invalidate()
 		}
 	}
 
-	if( m_pManager != NULL ) m_pManager->Invalidate(invalidateRc);
+	if( m_pManager != NULL && IsRectEmpty(&invalidateRc) == FALSE ) m_pManager->Invalidate(invalidateRc);
 }
 
 bool CControlUI::IsUpdateNeeded() const
@@ -966,12 +966,12 @@ void CControlUI::SetAttribute(LPCTSTR pstrName, LPCTSTR pstrValue)
         cxyRound.cy = _tcstol(pstr + 1, &pstr, 10);    ASSERT(pstr);     
         SetBorderRound(cxyRound);
     }
-	/*else if( _tcscmp(pstrName, _T("caretcolor")) == 0) {
+	else if( _tcscmp(pstrName, _T("caretcolor")) == 0) {
 		if( *pstrValue == _T('#')) pstrValue = ::CharNext(pstrValue);
 		LPTSTR pstr = NULL;
 		DWORD clrColor = _tcstoul(pstrValue, &pstr, 16);
 		SetCaretColor(clrColor);
-	}*/
+	}
     else if( _tcscmp(pstrName, _T("bkimage")) == 0 ) SetBkImage(pstrValue);
     else if( _tcscmp(pstrName, _T("width")) == 0 ) SetFixedWidth(_ttoi(pstrValue));
     else if( _tcscmp(pstrName, _T("height")) == 0 ) SetFixedHeight(_ttoi(pstrValue));

@@ -397,8 +397,6 @@ CControlUI* CDialogBuilder::_Parse(CMarkupNode* pRoot, CControlUI* pParent, CPai
                 break;
 			case 18:
 				if ( _tcscmp(pstrClass, DUI_CTR_ANIMATION_TABLAYOUT) == 0 )		pControl = new CAnimationTabLayoutUI;
-				{
-				}
 				break;
             case 20:
                 if( _tcscmp(pstrClass, DUI_CTR_LISTCONTAINERELEMENT) == 0 )   pControl = new CListContainerElementUI;
