@@ -18,7 +18,7 @@ CListUI::CListUI() : m_pCallback(NULL), m_bScrollSelect(false), m_iCurSel(-1), m
     m_ListInfo.nFont = -1;
     m_ListInfo.uTextStyle = DT_VCENTER; // m_uTextStyle(DT_VCENTER | DT_END_ELLIPSIS)
     m_ListInfo.dwTextColor = 0xFF000000;
-    m_ListInfo.dwBkColor = 0;
+    m_ListInfo.dwBkColor = 0xFFF0F0F0;
     m_ListInfo.bAlternateBk = false;
     m_ListInfo.dwSelectedTextColor = 0xFF000000;
     m_ListInfo.dwSelectedBkColor = 0xFFC1E3FF;
@@ -1739,31 +1739,32 @@ void CListElementUI::DrawItemBk(HDC hDC, const RECT& rcItem)
         }
 		else 
 			CRenderEngine::DrawColor(hDC, m_rcItem, GetAdjustColor(pInfo->dwDisabledBkColor));
-    }
-    if( IsSelected() ) {
+    }else if( IsSelected() ) {
         if( !pInfo->sSelectedImage.IsEmpty() ) {
             if( !DrawImage(hDC, (LPCTSTR)pInfo->sSelectedImage) ) pInfo->sSelectedImage.Empty();	
         }
 		else
 			CRenderEngine::DrawColor(hDC, m_rcItem, GetAdjustColor(pInfo->dwSelectedBkColor));
-    }
-    if( (m_uButtonState & UISTATE_HOT) != 0 ) {
+    }else if( (m_uButtonState & UISTATE_HOT) != 0 ) {
         if( !pInfo->sHotImage.IsEmpty() ) {
             if( !DrawImage(hDC, (LPCTSTR)pInfo->sHotImage) ) pInfo->sHotImage.Empty();
         }
 		else
 			CRenderEngine::DrawColor(hDC, m_rcItem, GetAdjustColor(pInfo->dwHotBkColor));
-    }
-
-    if( !m_sBkImage.IsEmpty() ) {
-        if( !pInfo->bAlternateBk || m_iIndex % 2 == 0 ) {
-            if( !DrawImage(hDC, (LPCTSTR)m_sBkImage) ) m_sBkImage.Empty();
-        }
-    }
-	else if( !pInfo->sBkImage.IsEmpty() ) {
-        if( !DrawImage(hDC, (LPCTSTR)pInfo->sBkImage) ) pInfo->sBkImage.Empty();
-        else if (iBackColor != 0)
-			CRenderEngine::DrawColor(hDC, m_rcItem, GetAdjustColor(iBackColor));			   
+	}else{
+		if( !m_sBkImage.IsEmpty() ) {
+			if ( pInfo->bAlternateBk && m_iIndex % 2 == 0 ) {
+				if( !DrawImage(hDC, (LPCTSTR)m_sBkImage) ) m_sBkImage.Empty();
+			}
+		}
+		else if( !pInfo->sBkImage.IsEmpty() ) {
+			if( !DrawImage(hDC, (LPCTSTR)pInfo->sBkImage) ) pInfo->sBkImage.Empty();
+			else if (iBackColor != 0)
+				CRenderEngine::DrawColor(hDC, m_rcItem, GetAdjustColor(iBackColor));			   
+		}
+		else if (pInfo->bAlternateBk && m_iIndex %2 == 0){
+			CRenderEngine::DrawColor(hDC, m_rcItem, GetAdjustColor(iBackColor));			 
+		}
 	}
 
     if ( pInfo->dwLineColor != 0 ) {

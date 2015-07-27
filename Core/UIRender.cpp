@@ -1389,9 +1389,9 @@ void CRenderEngine::DrawText(HDC hDC, CPaintManagerUI* pManager, RECT& rc, LPCTS
     ::SetTextColor(hDC, RGB(GetBValue(dwTextColor), GetGValue(dwTextColor), GetRValue(dwTextColor)));
     HFONT hOldFont = (HFONT)::SelectObject(hDC, pManager->GetFont(iFont));
     if (pManager->IsBackgroundTransparent() == TRUE && (uStyle & DT_CALCRECT) != DT_CALCRECT)
-  		DrawTextUnderLayered(hDC, pstrText, pManager->GetFont(iFont), dwTextColor, rc, uStyle);
+  		DrawTextUnderLayered(hDC, pstrText, pManager->GetFont(iFont), dwTextColor, rc, uStyle|DT_END_ELLIPSIS);
 	else
-		::DrawText(hDC, pstrText, -1, &rc, uStyle | DT_NOPREFIX);
+		::DrawText(hDC, pstrText, -1, &rc, uStyle | DT_NOPREFIX|DT_END_ELLIPSIS);
     ::SelectObject(hDC, hOldFont);
 }
 
