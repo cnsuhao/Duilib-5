@@ -153,7 +153,7 @@ namespace DuiLib
 
 	void CGroupLayoutUI::SetAttribute(LPCTSTR pstrName, LPCTSTR pstrValue)
 	{
-		if (_tcscmp(pstrName,_T("")) == 0)	SetGroupRoundImage(pstrValue);
+		if (_tcscmp(pstrName,_T("roundimage")) == 0)	SetGroupRoundImage(pstrValue);
 		else
 			CContainerUI::SetAttribute(pstrName,pstrValue);
 	}
