@@ -3,12 +3,11 @@
 namespace DuiLib
 {
 	class CWindowWnd;
-	class UILIB_API CDuiLibMrg
+	class UILIB_API CDuiLibMgr
 	{
-		/*friend CDuiLibMrg& GetDuiLibMrg();*/
+		/*friend CDuiLibMrg& GetDuiLibMgr();*/
 		public:
-			CDuiLibMrg();
-			~CDuiLibMrg();
+			CDuiLibMgr();
 
 			void SetMainApp(CWindowWnd* pMainWnd);
 			CWindowWnd* GetMainApp();
@@ -20,6 +19,6 @@ namespace DuiLib
 			CWindowWnd* m_pMainWnd;
 	};
 
-	UILIB_API CDuiLibMrg& GetDuiLibMrg();
+	UILIB_API CDuiLibMgr& GetDuiLibMgr();
 	UILIB_API CWindowWnd* GetMainApp();
 }

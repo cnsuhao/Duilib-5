@@ -82,6 +82,7 @@ public:
 	int GetSubControlFixedWdith(LPCTSTR pstrSubControlName);
 	const CDuiString GetSubControlUserData(LPCTSTR pstrSubControlName);
 	CControlUI* FindSubControl(LPCTSTR pstrSubControlName);
+	CControlUI* FindSubControlByClassName( LPCTSTR pstrSubControlClassName);
 
     virtual SIZE GetScrollPos() const;
     virtual SIZE GetScrollRange() const;

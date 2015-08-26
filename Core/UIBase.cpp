@@ -253,7 +253,7 @@ HWND CWindowWnd::Create(HWND hwndParent, LPCTSTR pstrName, DWORD dwStyle, DWORD 
     if( GetSuperClassName() == NULL && !RegisterWindowClass() ) return NULL;
 
 	//保存创建句柄到全局类中
-	CDuiLibMrg& AfxDuilib = GetDuiLibMrg();
+	CDuiLibMgr& AfxDuilib = GetDuiLibMgr();
 	if (AfxDuilib.GetMainApp() == NULL)
 		AfxDuilib.SetMainApp(this);
 

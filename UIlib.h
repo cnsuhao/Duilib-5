@@ -95,6 +95,7 @@
 #include "Control/UIText.h"
 #include "Control/UIEdit.h"
 #include "Control/EditUI2.h"
+#include "Control/UIIPAddress.h"
 
 #include "Control/UIButton.h"
 #include "Control/UIOption.h"

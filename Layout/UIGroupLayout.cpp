@@ -137,7 +137,7 @@ namespace DuiLib
 			CRenderEngine::DrawText(hDC, m_pManager, m_rcTextArea, m_sText, m_dwTextColor,0, DT_CALCRECT);
 
 			m_hBackground = CreateCompatibleDC(hDC);
-			UINT nWidth = m_rcTextArea.right-m_rcTextArea.left;
+			UINT nWidth = m_rcTextArea.right-m_rcTextArea.left ;
 			UINT nHeight = m_rcTextArea.bottom-m_rcTextArea.top;
 			m_hBitMap = CreateCompatibleBitmap(hDC,nWidth,nHeight);
 			SelectObject(m_hBackground,m_hBitMap);
@@ -147,10 +147,27 @@ namespace DuiLib
 
  		if (m_strGroupBoxRoundRectImage.IsEmpty())
  			CRenderEngine::DrawRoundRect(hDC,rc,m_nBorderSize,m_cxyBorderRound.cx,m_cxyBorderRound.cy,m_dwBorderColor);
+		else
+			DrawImage(hDC,m_strGroupBoxRoundRectImage);
+	}
+
+	void CGroupLayoutUI::SetAttribute(LPCTSTR pstrName, LPCTSTR pstrValue)
+	{
+		if (_tcscmp(pstrName,_T("")) == 0)	SetGroupRoundImage(pstrValue);
+		else
+			CContainerUI::SetAttribute(pstrName,pstrValue);
 	}
 
 	void CGroupLayoutUI::PaintBorder(HDC hDC)
 	{
-		return;
+
+	}
+
+	void CGroupLayoutUI::SetGroupRoundImage(LPCTSTR pstrValue)
+	{
+		if (m_strGroupBoxRoundRectImage == pstrValue)
+			return;
+		m_strGroupBoxRoundRectImage = pstrValue;
+		Invalidate();
 	}
 }

@@ -925,4 +925,11 @@ namespace DuiLib
 		return pSubControl;
 	}
 
+	CControlUI* CContainerUI::FindSubControlByClassName( LPCTSTR pstrSubControlClassName)
+	{
+		CControlUI* pSubControl = NULL;
+		pSubControl = static_cast<CControlUI*>(GetManager()->FindSubControlByClass(this,pstrSubControlClassName));
+		return pSubControl;
+	}
+
 } // namespace DuiLib

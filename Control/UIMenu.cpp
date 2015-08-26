@@ -654,7 +654,7 @@ void CMenuElementUI::DoEvent(TEventUI& event)
 			if( m_pWindow ) return;
 
 			bool hasSubMenu = false;
-			PostMessage(GetDuiLibMrg().GetMainWndHandle(),WM_MENUCLICK,NULL,(LPARAM)this);
+			PostMessage(GetDuiLibMgr().GetMainWndHandle(),WM_MENUCLICK,NULL,(LPARAM)this);
 			for( int i = 0; i < GetCount(); ++i ) {
 				if( GetItemAt(i)->GetInterface(kMenuElementUIInterfaceName) != NULL ) {
 					(static_cast<CMenuElementUI*>(GetItemAt(i)->GetInterface(kMenuElementUIInterfaceName)))->SetVisible(true);

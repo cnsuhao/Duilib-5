@@ -19,6 +19,7 @@ namespace DuiLib
 		,m_nCaretPos(0)
 		,m_nCaretOffset(0)
 		,m_nCaretWidth(1)
+		,m_nLimitText(-1)
 		,m_dwSelectTextColor(0xFFFFFFFF)
 		,m_dwSelectbkColor(0xFF3399FF)
 		,m_dwWaterColor(0xFFBAC0C5)
@@ -27,6 +28,7 @@ namespace DuiLib
 		SetRect(&m_rcTextPadding,5,4,5,2);
 		ZeroMemory(&m_rcCaret,sizeof(RECT));
 		ZeroMemory(&m_szCaretPt,sizeof(POINT));
+		m_uTextStyle = DT_SINGLELINE|DT_LEFT|DT_VCENTER|DT_NOPREFIX;
 	}
 
 	CEditUI2::~CEditUI2()
@@ -60,6 +62,7 @@ namespace DuiLib
 		else if (_tcsicmp(pstrName,_T("password")) == 0)	SetPasswordMode(_tcsicmp(pstrValue,_T("true")) == 0);
 		else if (_tcsicmp(pstrName,_T("passwordchar")) == 0)	SetPasswordChar(pstrValue);
 		else if (_tcsicmp(pstrName,_T("digital")) == 0)	SetDigitalMode(_tcsicmp(pstrValue,_T("true")) == 0);
+		else if (_tcsicmp(pstrName,_T("limited")) == 0) SetLimitText(_ttoi(pstrValue));
 		else if (_tcsicmp(pstrName,_T("normalimage")) == 0)	SetNormalImage(pstrValue);
 		else if (_tcsicmp(pstrName,_T("hotimage")) == 0)	SetHotImage(pstrValue);
 		else if (_tcsicmp(pstrName,_T("focusedimage")) == 0)  SetFocusedImage(pstrValue);
@@ -124,6 +127,7 @@ namespace DuiLib
 				if (m_sText.IsEmpty())
 					SetWaterMode(true);
 
+				m_nSelStart = m_nCaretPos;
 				m_nCaretOffset = 0;
 				m_bCaretOn = false;
 				m_bFocused = false;
@@ -151,9 +155,8 @@ namespace DuiLib
 			if (IsEnabled()){
 				if (IsReadOnly())
 					return;
-				if (OnKeyEvent(event))
+				if (OnKeyEvent(event) && (event.chKey < 'A' || event.chKey > 'Z'))
 				{
-					SaveEditText(m_sText);
 					if ((event.wKeyState & MK_CONTROL) != MK_CONTROL &&
 						(event.wKeyState & MK_SHIFT) != MK_SHIFT)
 						m_nSelStart = m_nCaretPos;
@@ -178,15 +181,19 @@ namespace DuiLib
 
 				int nMin = __min(m_nSelStart,m_nCaretPos);
 				int nMax = __max(m_nSelStart,m_nCaretPos);
-				LPCTSTR strTextRight = m_sText.Right(m_sText.GetLength()-nMax);
-				m_sText = m_sText.Left(nMin);
-				m_sText += event.chKey;
-				m_sText += strTextRight;
-				m_nSelStart = m_nCaretPos = nMin+1;
-				SaveEditText(m_sText);
-				RestartCaretBlinkTimer();
-				m_pManager->SendNotify(this,DUI_MSGTYPE_VALUECHANGED);
-				Invalidate();
+				CDuiString strLeft = m_sText.Left(nMin);
+				CDuiString strRight = m_sText.Right(m_sText.GetLength()-nMax);
+				CDuiString strValue;
+				strValue.Format(_T("%s%c%s"),(LPCTSTR)strLeft,event.chKey,(LPCTSTR)strRight);
+				if ((UINT)strValue.GetLength()<=GetLimitText())
+				{
+					SetText(strValue);
+					m_nSelStart = m_nCaretPos = nMin+1;
+					//SaveEditText(m_sText);
+					RestartCaretBlinkTimer();
+					m_pManager->SendNotify(this,DUI_MSGTYPE_VALUECHANGED);
+					Invalidate();
+				}
 			}
 			return;
 		}
@@ -366,7 +373,7 @@ namespace DuiLib
 	void CEditUI2::DrawText(HDC hDC,const RECT& rc,const CDuiString& sText)
 	{
 		RECT rcTextRange = {0};
-		CRenderEngine::DrawText(hDC,m_pManager,rcTextRange,sText,0,m_iFont,DT_CALCRECT);
+		CRenderEngine::DrawText(hDC,m_pManager,rcTextRange,sText,0,m_iFont,DT_CALCRECT|DT_NOPREFIX);
 		int nWidth = rcTextRange.right - rcTextRange.left;
 		int nHeight = rcTextRange.bottom - rcTextRange.top;
 
@@ -402,7 +409,7 @@ namespace DuiLib
 		CDuiString strSelectionText = sText.Mid(nFirstToRender,nNumChatToRender);
 
 		RECT rcSelection = {0};
-		CRenderEngine::DrawText(hDC,m_pManager,rcSelection,strSelectionText,0,m_iFont,DT_CALCRECT);
+		CRenderEngine::DrawText(hDC,m_pManager,rcSelection,strSelectionText,0,m_iFont,DT_CALCRECT|DT_NOPREFIX);
 
 		HDC hSectionDC = CreateCompatibleDC(hDC);
 		HBITMAP hSectionBitmap = CreateCompatibleBitmap(hDC,rcSelection.right - rcSelection.left,rcSelection.bottom - rcSelection.top);
@@ -477,6 +484,18 @@ namespace DuiLib
 	void CEditUI2::SetDigitalMode(bool bdigital)
 	{
 		m_bDigitalMode = bdigital;
+	}
+
+	UINT CEditUI2::GetLimitText()
+	{
+		return m_nLimitText;
+	}
+
+	void CEditUI2::SetLimitText(UINT nLimitText)
+	{
+		if (m_nLimitText == nLimitText)
+			return;
+		m_nLimitText = nLimitText;
 	}
 
 	void CEditUI2::SetDisabledImage(LPCTSTR lpszDisabledImage)
@@ -563,7 +582,7 @@ namespace DuiLib
 	{
 		m_bWaterMode = bWaterMode;
 
-		m_sText = bWaterMode ? m_sWaterText : m_sTextBak;
+		m_sText = bWaterMode && IsFocused() == false ? m_sWaterText : m_sTextBak;
 	}
 
 	void CEditUI2::SetText(LPCTSTR pstrText)
@@ -571,8 +590,8 @@ namespace DuiLib
 		if (m_sText == pstrText)
 			return;
 
-		m_sTextBak = m_sText;
-		SetWaterMode(m_sText.IsEmpty() == TRUE);
+		m_sTextBak = pstrText;
+		SetWaterMode(m_sTextBak.IsEmpty() == TRUE);
 		Invalidate();
 	}
 
@@ -592,7 +611,7 @@ namespace DuiLib
 		else 
 			strSelectionText = strText.Mid(nStart,nLen);
 
-		CRenderEngine::DrawText(hDC,m_pManager,rcSelection,strSelectionText,0,m_iFont,DT_CALCRECT);
+		CRenderEngine::DrawText(hDC,m_pManager,rcSelection,strSelectionText,0,m_iFont,DT_CALCRECT|DT_NOPREFIX);
 
 		UINT nWidth = rcSelection.right - rcSelection.left;
 		UINT nHeight = rcSelection.bottom - rcSelection.top;
@@ -601,7 +620,7 @@ namespace DuiLib
 		{
 			RECT rcSelectionOffset = {0};
 			strSelectionText = strText.Left(nStart);
-			CRenderEngine::DrawText(hDC,m_pManager,rcSelectionOffset,strSelectionText,0,m_iFont,DT_CALCRECT);
+			CRenderEngine::DrawText(hDC,m_pManager,rcSelectionOffset,strSelectionText,0,m_iFont,DT_CALCRECT|DT_NOPREFIX);
 			
 			rcSelection.left += rcSelectionOffset.right;
 		}
@@ -653,7 +672,7 @@ namespace DuiLib
 		int nCalcCaretPos = m_nCaretPos;
 		CDuiString sText;
 		GetEditText(sText);
-		const int nLen = sText.GetLength();
+		int nLen = sText.GetLength();
 		switch (event.chKey)
 		{
 			case VK_HOME:
@@ -682,9 +701,11 @@ namespace DuiLib
 						else	++nMax;
 					}
 
-					LPCTSTR lpszRight = m_sText.Right(m_sText.GetLength()-nMax);
-					m_sText = m_sText.Left(nMin);
-					m_sText += lpszRight;
+					CDuiString strRight = m_sText.Right(m_sText.GetLength()-nMax);
+					CDuiString strLeft = m_sText.Left(nMin);
+					CDuiString strValue;
+					strValue.Format(_T("%s%s"),(LPCTSTR)strLeft,(LPCTSTR)strRight);
+					SetText(strValue);
 					nCalcCaretPos = nMin;
 				}
 				break;
@@ -699,9 +720,16 @@ namespace DuiLib
 					const int nMax = __max(m_nSelStart,m_nCaretPos);
 					OnCopy(nMin,nMax-nMin);
 				}
+				break;
 			case 'V':
 				if ((event.wKeyState & MK_CONTROL) == MK_CONTROL)
-					OnPaste(m_nCaretPos);
+				{
+					const int nMin = __min(m_nSelStart,m_nCaretPos);
+					const int nMax = __max(m_nSelStart,m_nCaretPos);
+					nCalcCaretPos = OnPaste(nMin,nMax);
+					nLen = m_sText.GetLength();
+					m_nSelStart = nCalcCaretPos;
+				}
 				break;
 			case 'X':
 				if ((event.wKeyState & MK_CONTROL) == MK_CONTROL)
@@ -825,13 +853,13 @@ namespace DuiLib
 		{
 			RECT rcTextRange = {0};
 		 	CDuiString strDrawText = sText.Left(m_nCaretPos);
-			CRenderEngine::DrawText(hDC,m_pManager,rcTextRange,strDrawText,0,m_iFont,DT_CALCRECT);
+			CRenderEngine::DrawText(hDC,m_pManager,rcTextRange,strDrawText,0,m_iFont,DT_CALCRECT|DT_NOPREFIX);
 
 			m_nCaretOffset = rcTextRange.right - rcTextRange.left - dwOffset;
 		
 			if (m_nCaretOffset > 0 )
 			{
-				CRenderEngine::DrawText(hDC,m_pManager,rcTextRange,sText,0,m_iFont,DT_CALCRECT);
+				CRenderEngine::DrawText(hDC,m_pManager,rcTextRange,sText,0,m_iFont,DT_CALCRECT|DT_NOPREFIX);
 				LONG lTextRight = rcTextRange.right + m_rcItem.left + m_rcTextPadding.left - m_nCaretOffset;
 				if (lTextRight < m_rcItem.right - m_rcTextPadding.right)
 					m_nCaretOffset -= m_rcItem.right - m_rcTextPadding.right - lTextRight - m_nCaretWidth;
@@ -861,9 +889,14 @@ namespace DuiLib
 		dwOffset = m_rcCaret.left - m_rcItem.left - m_rcTextPadding.left;
 	}
 
+	bool CEditUI2::CanPaste()
+	{
+		return IsReadOnly() == false;
+	}
+
 	void CEditUI2::OnCheckAll()
 	{
-
+		
 	}
 
 	void CEditUI2::OnCopy(int nPos,int nLen)
@@ -879,27 +912,96 @@ namespace DuiLib
 			if (EmptyClipboard() == 0)
 				break;
 
-			hMem = GlobalAlloc(GMEM_MOVEABLE,(nLen+1)*sizeof(TCHAR));
+			hMem = GlobalAlloc(GMEM_ZEROINIT,(nLen+1)*sizeof(TCHAR));
 			if (hMem == NULL)
 				break;
 
 			LPTSTR lpText = (LPTSTR)GlobalLock(hMem);
-			_tcscpy_s(lpText,nLen,CDuiString((LPCTSTR)m_sText+nPos,nLen));
+			CDuiString strSrcText = CDuiString((LPCTSTR)m_sText+nPos,nLen);
+			_tcscpy_s(lpText,nLen+1,(LPCTSTR)strSrcText);
 			GlobalUnlock(hMem);
 
+			if (SetClipboardData(CF_UNICODETEXT,hMem) == FALSE)
+				break;
 		} while (FALSE);
 		
 		if (bSuccess)
 			CloseClipboard();
 	}
 
-	void CEditUI2::OnPaste(int nPos)
+	int CEditUI2::OnPaste(int nMin,int nMax)
 	{
+		int nLen = 0;
+		if (CanPaste() == false)
+			return nLen;
 
+		BOOL bSuccess = FALSE;
+		HANDLE hMem = NULL;
+		do 
+		{
+			bSuccess = OpenClipboard(m_pManager->GetPaintWindow());
+			if (bSuccess == FALSE)
+				break;
+
+			HANDLE hMem = GetClipboardData(CF_UNICODETEXT);
+			if (hMem == NULL)
+				break;
+
+			CDuiString strLeft = m_sText.Left(nMin);
+			CDuiString strRight = m_sText.Right(m_sText.GetLength()-nMax);
+			CDuiString strMid = (LPCTSTR)GlobalLock(hMem);
+			nLen = strMid.GetLength()+nMin;
+			CDuiString strPaste;
+			strPaste.Format(_T("%s%s%s"),(LPCTSTR)strLeft,(LPCTSTR)strMid,(LPCTSTR)strRight);
+			//如果粘贴后的文字超过编辑框数量限制则失败
+			if ((UINT)strPaste.GetLength() <= GetLimitText())
+				SetText(strPaste);
+			else
+				nLen = 0;
+			GlobalUnlock(hMem);
+
+		} while (FALSE);
+
+		if (bSuccess)
+			CloseClipboard();
+
+		return nLen;
 	}
 
 	void CEditUI2::OnCut(int nPos,int nLen)
 	{
+		BOOL bSuccess = FALSE;
+		HANDLE hMem = NULL;
+		do 
+		{
+			bSuccess = OpenClipboard(m_pManager->GetPaintWindow());
+			if (bSuccess == FALSE)
+				break;
 
+			if (EmptyClipboard() == 0)
+				break;
+
+			hMem = GlobalAlloc(GMEM_ZEROINIT,(nLen+1)*sizeof(TCHAR));
+			if (hMem == NULL)
+				break;
+
+			CDuiString strLeft = m_sText.Left(nPos);
+			CDuiString strRight = m_sText.Right(m_sText.GetLength()-nPos-nLen);
+			CDuiString strCutText;
+			strCutText.Format(_T("%s%s"),(LPCTSTR)strLeft,(LPCTSTR)strRight);
+			SetText(strCutText);
+
+			LPTSTR lpText = (LPTSTR)GlobalLock(hMem);
+			CDuiString strSrcText = CDuiString((LPCTSTR)m_sText+nPos,nLen);
+			_tcscpy_s(lpText,nLen+1,(LPCTSTR)strSrcText);
+			GlobalUnlock(hMem);
+
+			if (SetClipboardData(CF_UNICODETEXT,hMem) == FALSE)
+				break;
+
+		} while (FALSE);
+
+		if (bSuccess)
+			CloseClipboard();
 	}
 }

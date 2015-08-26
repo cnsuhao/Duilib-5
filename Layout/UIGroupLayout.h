@@ -14,9 +14,12 @@ namespace DuiLib
 		virtual LPVOID GetInterface(LPCTSTR pstrName);
 		virtual LPCTSTR GetClass() const;
 		virtual void SetPos(RECT rc);
-		void PaintBorder(HDC hDC);
 		void PaintStatusImage(HDC hDC);
 		void PaintText(HDC hDC);
+		virtual void SetAttribute(LPCTSTR pstrName, LPCTSTR pstrValue);
+		virtual void PaintBorder(HDC hDC);
+	public:
+		void SetGroupRoundImage(LPCTSTR pstrValue);
 	private:
 		DWORD  m_dwTextColor;
 		HDC			m_hBackground;

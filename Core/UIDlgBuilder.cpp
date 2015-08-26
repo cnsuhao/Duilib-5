@@ -371,6 +371,7 @@ CControlUI* CDialogBuilder::_Parse(CMarkupNode* pRoot, CControlUI* pParent, CPai
                 else if( _tcscmp(pstrClass, DUI_CTR_TABLAYOUT) == 0 )         pControl = new CTabLayoutUI;
                 else if( _tcscmp(pstrClass, DUI_CTR_SCROLLBAR) == 0 )         pControl = new CScrollBarUI; 
 				else if( _tcscmp(pstrClass, DUI_CTR_CHARTVIEW) == 0 )			pControl = new CChartViewUI;
+				else if( _tcscmp(pstrClass, DUI_CTR_IPADDRESS) == 0)			pControl = new CIPAddressUI;
                 break;
             case 10:
                 if( _tcscmp(pstrClass, DUI_CTR_LISTHEADER) == 0 )             pControl = new CListHeaderUI;

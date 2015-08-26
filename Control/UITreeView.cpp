@@ -112,7 +112,7 @@ namespace DuiLib
 		if( event.Type == UIEVENT_DBLCLICK )
 		{
 			if( IsEnabled() ) {
-				m_pManager->SendNotify(this, _T("itemdbclick"));
+				m_pManager->SendNotify(this, DUI_MSGTYPE_ITEMDBCLICK);
 				Invalidate();
 			}
 			return;

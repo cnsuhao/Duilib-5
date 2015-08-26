@@ -3,9 +3,9 @@
 
 namespace DuiLib
 {
-	CDuiLibMrg& GetDuiLibMrg()
+	CDuiLibMgr& GetDuiLibMgr()
 	{
-		static CDuiLibMrg DuiLibInfo;
+		static CDuiLibMgr DuiLibInfo;
 		static BOOL bInitObject = TRUE;
 		if (bInitObject != FALSE)
 		{
@@ -18,37 +18,32 @@ namespace DuiLib
 
 	CWindowWnd* GetMainApp()
 	{
-		return GetDuiLibMrg().GetMainApp();
+		return GetDuiLibMgr().GetMainApp();
 	}
 
-	CDuiLibMrg::CDuiLibMrg()
+	CDuiLibMgr::CDuiLibMgr()
 		: m_pMainWnd(NULL),
 		m_hMainWnd(NULL)
 	{
 
 	}
 
-	CDuiLibMrg::~CDuiLibMrg()
-	{
-
-	}
-
-	void CDuiLibMrg::SetMainApp(CWindowWnd* pMainWnd)
+	void CDuiLibMgr::SetMainApp(CWindowWnd* pMainWnd)
 	{
 		m_pMainWnd = pMainWnd;
 	}
 
-	CWindowWnd* CDuiLibMrg::GetMainApp()
+	CWindowWnd* CDuiLibMgr::GetMainApp()
 	{
 		return m_pMainWnd;
 	}
 
-	void CDuiLibMrg::SetMainWndHandle(HWND hMainWnd)
+	void CDuiLibMgr::SetMainWndHandle(HWND hMainWnd)
 	{
 		m_hMainWnd = hMainWnd;
 	}
 
-	HWND CDuiLibMrg::GetMainWndHandle()
+	HWND CDuiLibMgr::GetMainWndHandle()
 	{
 		return m_hMainWnd;
 	}

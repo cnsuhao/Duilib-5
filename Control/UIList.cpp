@@ -2076,10 +2076,10 @@ void CListTextElementUI::DrawItemText(HDC hDC, const RECT& rcItem)
         else strText.Assign(GetText(i));
         if( pInfo->bShowHtml )
             CRenderEngine::DrawHtmlText(hDC, m_pManager, rcItem, strText.GetData(), iTextColor, \
-                &m_rcLinks[m_nLinks], &m_sLinks[m_nLinks], nLinks, DT_SINGLELINE | pInfo->uTextStyle);
+                &m_rcLinks[m_nLinks], &m_sLinks[m_nLinks], nLinks, DT_SINGLELINE | DT_END_ELLIPSIS | pInfo->uTextStyle);
         else
             CRenderEngine::DrawText(hDC, m_pManager, rcItem, strText.GetData(), iTextColor, \
-            pInfo->nFont, DT_SINGLELINE | pInfo->uTextStyle);
+            pInfo->nFont, DT_SINGLELINE | DT_END_ELLIPSIS | pInfo->uTextStyle);
 
         m_nLinks += nLinks;
         nLinks = lengthof(m_rcLinks) - m_nLinks; 

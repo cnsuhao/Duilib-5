@@ -35,6 +35,8 @@ namespace DuiLib
 		void SetPasswordChar(LPCTSTR lpszPasswordChar);
 		bool IsDigitalMode();
 		void SetDigitalMode(bool bdigital);
+		void SetLimitText(UINT nLimitText);
+		UINT GetLimitText();
 		void SetNormalImage(LPCTSTR lpszNormalImage);
 		void SetHotImage(LPCTSTR lpszHotImage);
 		void SetFocusedImage(LPCTSTR lpszFocusedImage);
@@ -48,9 +50,11 @@ namespace DuiLib
 		void SetWaterTextColor(DWORD dwWaterColor);
 	protected:
 		void OnCut(int nPos,int nLen);
-		void OnPaste(int nPos);
+		int OnPaste(int nMin,int nMax);
 		void OnCopy(int nPos,int nLen);
 		void OnCheckAll();
+
+		bool CanPaste();
 
 		bool IsWaterMode();
 		void SetWaterMode(bool bWaterMode);
@@ -84,6 +88,7 @@ namespace DuiLib
 		bool m_bCaretOn;								//显示输入标记
 		bool m_bDeleteKeyDown;					//删除键已经按下
 		CALC_CARET_TYPE CalcCaretType;		//计算输入标记的方式
+		UINT	m_nLimitText;								//文字限制个数
 		int	m_nCaretOffset;							//文字相对于编辑框的偏移量
 		POINT  m_szCaretPt;							//鼠标在编辑框点击时的位置
 		RECT     m_rcCaret;								//输入标记所在位置
