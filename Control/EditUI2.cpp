@@ -155,6 +155,7 @@ namespace DuiLib
 			if (IsEnabled()){
 				if (IsReadOnly())
 					return;
+
 				if (OnKeyEvent(event) && (event.chKey < 'A' || event.chKey > 'Z'))
 				{
 					if ((event.wKeyState & MK_CONTROL) != MK_CONTROL &&
@@ -168,6 +169,7 @@ namespace DuiLib
 		}
 
 		if (event.Type == UIEVENT_CHAR){
+			
 			if (event.chKey == VK_BACK || event.chKey == VK_RETURN || event.chKey == VK_ESCAPE)
 				return;
 			if (event.wKeyState && (event.wKeyState & MK_SHIFT) != MK_SHIFT)
@@ -176,7 +178,8 @@ namespace DuiLib
 			if (IsEnabled()){
 				if (IsReadOnly())
 					return;
-				else	if (IsDigitalMode() == true && (event.chKey < 256 && isdigit(event.chKey)) == FALSE)
+
+				if (IsDigitalMode() == true && (event.chKey < 256 && isdigit(event.chKey)) == FALSE)
 					return;
 
 				int nMin = __min(m_nSelStart,m_nCaretPos);
@@ -191,7 +194,7 @@ namespace DuiLib
 					m_nSelStart = m_nCaretPos = nMin+1;
 					//SaveEditText(m_sText);
 					RestartCaretBlinkTimer();
-					m_pManager->SendNotify(this,DUI_MSGTYPE_VALUECHANGED);
+					m_pManager->SendNotify(this,DUI_MSGTYPE_TEXTCHANGED);
 					Invalidate();
 				}
 			}
@@ -749,7 +752,7 @@ namespace DuiLib
 		}
 
 		if (nLen != m_sText.GetLength())
-			m_pManager->SendNotify(this,DUI_MSGTYPE_VALUECHANGED);
+			m_pManager->SendNotify(this,DUI_MSGTYPE_TEXTCHANGED);
 
 		CDuiString strTipInfo;
 		if (nCalcCaretPos < 0)

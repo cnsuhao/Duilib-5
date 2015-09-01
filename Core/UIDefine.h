@@ -50,6 +50,7 @@ union DuiMessageMapFunctions
 
 #define DUI_MSGTYPE_DROPDOWN               (_T("dropdown"))
 #define DUI_MSGTYPE_SETFOCUS               (_T("setfocus"))
+#define DUI_MSGTYPE_KEYDOWN				(_T("keydown"))
 
 #define DUI_MSGTYPE_KILLFOCUS              (_T("killfocus"))
 #define DUI_MSGTYPE_ITEMCLICK 		   	   (_T("itemclick"))
