@@ -87,14 +87,6 @@ typedef enum EVENTTYPE_UI
 /////////////////////////////////////////////////////////////////////////////////////
 //
 
-
-
-#define 	TSizeParamNormal		0x1
-#define	TSizeParamRestored	0x2
-#define	TSizeParamMax			0x4
-#define	TSizeParamMin			0x8
-
-
 typedef struct tagTFontInfo
 {
     HFONT hFont;
@@ -204,8 +196,6 @@ public:
     void SetShowUpdateRect(bool show);
 	void SetWindowMaxBox(bool bMaxBox);
 	bool IsMaxSizeBox();
-	void SetSizeType(DWORD dwSizeType);
-	bool IsSizeRestored();
 	bool GetDropEnable();
 	void SetDropEnable(bool bEnable = true);
 
@@ -386,7 +376,7 @@ private:
 	bool m_bUsedVirtualWnd;
 	LPBYTE	m_pBmpOffscreenBits;
 	RECT	m_rcInvalidate;			// 半透明异形窗体中，保存刷新区域
-	DWORD m_dwSizeType;
+	bool m_bIsRestore;
     //
     CStdPtrArray m_aNotifiers;
     CStdPtrArray m_aTimers;

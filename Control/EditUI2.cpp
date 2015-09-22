@@ -124,13 +124,14 @@ namespace DuiLib
 			return;
 		}else if (event.Type == UIEVENT_KILLFOCUS){
 			if (IsEnabled()){
-				if (m_sText.IsEmpty())
-					SetWaterMode(true);
-
 				m_nSelStart = m_nCaretPos;
 				m_nCaretOffset = 0;
 				m_bCaretOn = false;
 				m_bFocused = false;
+
+				if (m_sText.IsEmpty())
+					SetWaterMode(true);
+
 				m_pManager->KillTimer(this,IME_BLINK_TIMER_ID);
 				DestroyCaret();
 				Invalidate();

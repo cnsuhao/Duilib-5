@@ -74,6 +74,7 @@
 #include "Core/UIDlgBuilder.h"
 #include "Core/UIRender.h"
 #include "Utils/WinImplBase.h"
+#include "Utils/UICaret.h"
 
 #include "Effect/UIAnimation.h"
 

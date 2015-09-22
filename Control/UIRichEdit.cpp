@@ -874,6 +874,7 @@ HRESULT InitDefaultCharFormat(CRichEditUI* re, CHARFORMAT2W* pcf, HFONT hfont)
     DWORD dwColor = re->GetTextColor();
 	if(re->GetManager()->IsBackgroundTransparent())
 		CRenderEngine::CheckAalphaColor(dwColor);
+
     pcf->cbSize = sizeof(CHARFORMAT2W);
     pcf->crTextColor = RGB(GetBValue(dwColor), GetGValue(dwColor), GetRValue(dwColor));
     LONG yPixPerInch = GetDeviceCaps(re->GetManager()->GetPaintDC(), LOGPIXELSY);
@@ -1198,7 +1199,7 @@ void CTxtWinHost::TxViewChange(BOOL fUpdate)
 BOOL CTxtWinHost::TxCreateCaret(HBITMAP hbmp, INT xWidth, INT yHeight)
 {
 	if (m_re->GetManager()->IsBackgroundTransparent())
-		m_re->CreateCaret(xWidth,yHeight);
+		return m_re->CreateCaret(xWidth,yHeight);
 	return ::CreateCaret(m_re->GetManager()->GetPaintWindow(), hbmp, xWidth, yHeight);
 }
 
@@ -1738,9 +1739,9 @@ CRichEditUI::CRichEditUI() :m_pCallback(NULL), m_pTwh(NULL),m_pRichEditOle(NULL)
 	m_fAccumulateDBC =true;
 #else
 	m_fAccumulateDBC= false;
-	::ZeroMemory(&m_rcTextPadding, sizeof(m_rcTextPadding));
 #endif
 
+	::ZeroMemory(&m_rcTextPadding, sizeof(m_rcTextPadding));
 	ZeroMemory(&m_rcPos,sizeof(RECT));
 }
 
@@ -2507,10 +2508,12 @@ void CRichEditUI::SetCaretPos(int x,int y)
 	m_rcPos.bottom += m_rcPos.top;
 }
 
-void CRichEditUI::CreateCaret(int xWidth,int yHeight)
+bool CRichEditUI::CreateCaret(int xWidth,int yHeight)
 {
 	m_rcPos.right = xWidth;
 	m_rcPos.bottom = yHeight;
+
+	return true;
 }
 
 // 多行非rich格式的richedit有一个滚动条bug，在最后一行是空行时，LineDown和SetScrollPos无法滚动到最后

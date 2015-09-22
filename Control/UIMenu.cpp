@@ -20,6 +20,8 @@ CMenuUI::CMenuUI()
 {
 	if (GetHeader() != NULL)
 		GetHeader()->SetVisible(false);
+
+	m_ListInfo.dwBkColor = 0;
 }
 
 CMenuUI::~CMenuUI()
@@ -495,7 +497,7 @@ CMenuElementUI::CMenuElementUI()
 ,m_dwSeparatorColor(DEFAULT_SEPARATOR_COLOR)
 ,m_bCheckItem(false)
 {
-	m_cxyFixed.cy = 25;
+	m_cxyFixed.cy = 24;
 	m_bMouseChildEnabled = true;
 
 	SetMouseChildEnabled(false);
@@ -522,9 +524,9 @@ void CMenuElementUI::DoPaint(HDC hDC, const RECT& rcPaint)
 	{
 		if( m_pOwner == NULL ) return;
 		TListInfoUI* pInfo = m_pOwner->GetListInfo();
-		UINT nOffset = m_cxyFixed.cy /2;
-		RECT rcLine = {m_rcItem.left + pInfo->rcTextPadding.left , m_rcItem.bottom - nOffset, m_rcItem.right -pInfo->rcTextPadding.right  , m_rcItem.bottom - nOffset};
-		CRenderEngine::DrawLine(hDC, rcLine, 1, m_dwSeparatorColor);
+		int nVCenter = (m_rcItem.top + m_rcItem.bottom)/2;
+		RECT rcLine = {m_rcItem.left + pInfo->rcTextPadding.left , nVCenter , m_rcItem.right -pInfo->rcTextPadding.right  , nVCenter };
+		CRenderEngine::DrawLine(hDC, rcLine, m_cxyFixed.cy, m_dwSeparatorColor);
 	}
 	else
 	{
@@ -728,8 +730,12 @@ void CMenuElementUI::SetAttribute(LPCTSTR pstrName, LPCTSTR pstrValue)
 {
 	if (_tcsicmp(pstrName,_T("separator")) == 0)	SetSeparatorType(_tcsicmp(pstrValue,_T("true")) == 0);
 	else if (_tcsicmp(pstrName,_T("itemchecked")) == 0)	SetMenuItemChecked(_tcsicmp(pstrValue,_T("true")) == 0);
-	else if ( _tcscmp(pstrName, _T("fixedheight")) == 0){
-		SetFixedHeight(_ttoi(pstrValue));
+	else if (_tcscmp(pstrName, _T("fixedheight")) == 0) SetFixedHeight(_ttoi(pstrValue));
+	else if (_tcsicmp(pstrName,_T("linecolor")) == 0) {
+		if( *pstrValue == _T('#')) pstrValue = ::CharNext(pstrValue);
+		LPTSTR pstr = NULL;
+		DWORD clrColor = _tcstoul(pstrValue, &pstr, 16);
+		SetSeparatorColor(clrColor);	
 	}
 	else
 		CListContainerElementUI::SetAttribute(pstrName,pstrValue);

@@ -89,13 +89,13 @@ m_bMouseCapture(false),
 m_bOffscreenPaint(true),
 m_bAlphaBackground(false),
 m_bUsedVirtualWnd(false),
-m_dwSizeType(TSizeParamNormal),
 m_nOpacity(255),
 m_pParentResourcePM(NULL),
 m_pBmpBackgroundBits(NULL),
 m_bMaxSizeBox(true),
 m_bEnableDrop(false),
-m_pBmpOffscreenBits(NULL)
+m_pBmpOffscreenBits(NULL),
+m_bIsRestore(false)
 {
     m_dwDefaultDisabledColor = 0xFFA7A6AA;
     m_dwDefaultFontColor = 0xFF000000;
@@ -478,18 +478,6 @@ bool CPaintManagerUI::IsMaxSizeBox()
 	return m_bMaxSizeBox;
 }
 
-void CPaintManagerUI::SetSizeType(DWORD dwSizeType)
-{
-	if (m_dwSizeType = dwSizeType)
-		return;
-	m_dwSizeType = dwSizeType;
-}
-
-bool CPaintManagerUI::IsSizeRestored()
-{
-	return (m_dwSizeType&TSizeParamRestored) == TSizeParamRestored;
-}
-
 void CPaintManagerUI::SetWindowMaxBox(bool bMaxBox)
 {
 	if (m_bMaxSizeBox == bMaxBox)
@@ -708,7 +696,9 @@ bool CPaintManagerUI::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, LR
 		   }
 		   // Set focus to first control?
 		   if(m_bFocusNeeded)
+		   {
 			   SetNextTabControl();
+		   }
 
 		   // 是否开启了半透明窗体模式
 		   if(m_bAlphaBackground)
@@ -720,21 +710,16 @@ bool CPaintManagerUI::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, LR
 
 			   RECT rcClient = {0};
 			   GetClientRect(m_hWndPaint, &rcClient);
-			   if (m_dwSizeType == TSizeParamRestored)
+			   // 如果窗体从最小化恢复，则刷新整个软件
+			   if (!m_bIsRestore)
 			   {
-				   rcPaint = rcClient;	
-				   m_dwSizeType |= TSizeParamNormal;
+				   UnionRect(&rcPaint, &rcPaint, &m_rcInvalidate);
+				   ::ZeroMemory(&m_rcInvalidate, sizeof(m_rcInvalidate));				   
 			   }
 			   else
 			   {
-				   //由于控件在销毁时，可能需要重绘，但是由于窗口大小已经改变，不需要
-				   //超过窗口大小的重绘，否则可能引起异常
-				   //如果代码在这里引起异常，请修改
-				   RECT rcTmp = {0};
-				   IntersectRect(&rcTmp,&rcClient,&m_rcInvalidate);
-				   ZeroMemory(&m_rcInvalidate,sizeof(m_rcInvalidate));
-
-				   UnionRect(&rcPaint,&rcPaint,&rcTmp);
+				   rcPaint = rcClient;
+				   m_bIsRestore = false;
 			   }
 
 			   int nClientWidth = rcClient.right - rcClient.left;
@@ -757,13 +742,13 @@ bool CPaintManagerUI::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, LR
 
 				   ASSERT(m_hDcOffscreen);
 				   ASSERT(m_hbmpOffscreen);
-			  } 
+			   }
 
 			   HBITMAP hOldBitmap = (HBITMAP)::SelectObject(m_hDcOffscreen, m_hbmpOffscreen);
 			   int iSaveDC = ::SaveDC(m_hDcOffscreen);
-
 			   CRenderEngine::ClearAalphaPixel(m_pBmpOffscreenBits, nClientWidth, &rcPaint);
 			   m_pRoot->DoPaint(m_hDcOffscreen, rcPaint);
+			   //DrawCaret(m_hDcOffscreen, rcPaint);
 			   for(int i = 0; i < m_aPostPaintControls.GetSize(); i++)
 			   {
 				   CControlUI* pPostPaintControl = static_cast<CControlUI*>(m_aPostPaintControls[i]);
@@ -801,7 +786,7 @@ bool CPaintManagerUI::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, LR
 				   HBITMAP hOldBitmap = (HBITMAP) ::SelectObject(m_hDcOffscreen, m_hbmpOffscreen);
 				   int iSaveDC = ::SaveDC(m_hDcOffscreen);
 				   m_pRoot->DoPaint(m_hDcOffscreen, ps.rcPaint);
-
+				  // DrawCaret(m_hDcOffscreen, ps.rcPaint);
 				   for(int i = 0; i < m_aPostPaintControls.GetSize(); i++)
 				   {
 					   CControlUI* pPostPaintControl = static_cast<CControlUI*>(m_aPostPaintControls[i]);
@@ -811,17 +796,21 @@ bool CPaintManagerUI::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, LR
 				   ::BitBlt(ps.hdc, ps.rcPaint.left, ps.rcPaint.top, ps.rcPaint.right - ps.rcPaint.left,
 					   ps.rcPaint.bottom - ps.rcPaint.top, m_hDcOffscreen, ps.rcPaint.left, ps.rcPaint.top, SRCCOPY);
 				   ::SelectObject(m_hDcOffscreen, hOldBitmap);
+
 			   }
 			   else
 			   {
 				   // A standard paint job
 				   int iSaveDC = ::SaveDC(ps.hdc);
 				   m_pRoot->DoPaint(ps.hdc, ps.rcPaint);
+				   //DrawCaret(ps.hdc, ps.rcPaint);
 				   ::RestoreDC(ps.hdc, iSaveDC);
 			   }
 		   }
+
 		   // All Done!
 		   ::EndPaint(m_hWndPaint, &ps);
+
 	   }
 	   // If any of the painting requested a resize again, we'll need
 	   // to invalidate the entire window once more.
@@ -855,6 +844,10 @@ bool CPaintManagerUI::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, LR
             ::RestoreDC(hDC, save);
         }
         break;
+	case WM_SYSCOMMAND:
+			if (SC_RESTORE == (wParam & 0xfff0))
+				m_bIsRestore = true;
+		break;
     case WM_GETMINMAXINFO:
         {
             LPMINMAXINFO lpMMI = (LPMINMAXINFO) lParam;

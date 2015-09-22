@@ -118,7 +118,7 @@ public:
 
     void SetScrollPos(SIZE szPos);
 	void SetCaretPos(int x,int y);
-	void CreateCaret(int xWidth,int yHeight);
+	bool CreateCaret(int xWidth,int yHeight);
 	BOOL ShowCaret(BOOL fShow);
     void LineUp();
     void LineDown();
