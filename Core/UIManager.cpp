@@ -1057,13 +1057,31 @@ bool CPaintManagerUI::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, LR
             m_pEventClick = pControl;
         }
         break;
+	case WM_RBUTTONUP:
+		{
+			POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+			//::ScreenToClient(m_hWndPaint, &pt);
+			m_ptLastMousePos = pt;
+			if( m_pEventClick == NULL ) break;
+			ReleaseCapture();
+			TEventUI event = { 0 };
+			event.Type = UIEVENT_RBUTTONUP;
+			event.pSender = m_pEventClick;
+			event.ptMouse = pt;
+			event.wKeyState = (WORD)wParam;
+			event.lParam = (LPARAM)m_pEventClick;
+			event.dwTimestamp = ::GetTickCount();
+			m_pEventClick->Event(event);
+			//m_pEventClick = NULL;
+		}
+		break;
     case WM_CONTEXTMENU:
         {
             POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
             ::ScreenToClient(m_hWndPaint, &pt);
             m_ptLastMousePos = pt;
             if( m_pEventClick == NULL ) break;
-            ReleaseCapture();
+            //ReleaseCapture();
             TEventUI event = { 0 };
             event.Type = UIEVENT_CONTEXTMENU;
             event.pSender = m_pEventClick;

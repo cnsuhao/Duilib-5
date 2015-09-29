@@ -350,31 +350,16 @@ LRESULT CMenuWnd::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 				rc.left = rc.right - cxFixed;
 			}
 
-			if( rc.bottom > rcWork.bottom )
-			{
-				rc.bottom = rc.top;
-				rc.top = rc.bottom - cyFixed;
-			}
-
 			if (rc.right > rcWork.right)
 			{
 				rc.right = rcWindow.left;
 				rc.left = rc.right - cxFixed;
-
-				rc.top = rcWindow.bottom;
-				rc.bottom = rc.top + cyFixed;
 			}
 
-			if( rc.top < rcWork.top )
+			if( rc.bottom > rcWork.bottom )
 			{
-				rc.top = rcOwner.top;
-				rc.bottom = rc.top + cyFixed;
-			}
-
-			if (rc.left < rcWork.left)
-			{
-				rc.left = rcWindow.right;
-				rc.right = rc.left + cxFixed;
+				rc.bottom = rc.top;
+				rc.top = rc.bottom - cyFixed;
 			}
 
 			MoveWindow(m_hWnd, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, FALSE);
@@ -401,8 +386,6 @@ LRESULT CMenuWnd::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 			szAvailable = pRoot->EstimateSize(szAvailable);
 			m_pm.SetInitSize(szAvailable.cx, szAvailable.cy);
 
-			DWORD dwAlignment = eMenuAlignment_Left | eMenuAlignment_Top;
-
 			SIZE szInit = m_pm.GetInitSize();
 			CDuiRect rc;
 			CPoint point = m_BasedPoint;
@@ -414,15 +397,18 @@ LRESULT CMenuWnd::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 			int nWidth = rc.GetWidth();
 			int nHeight = rc.GetHeight();
 
-			if (dwAlignment & eMenuAlignment_Right)
+			//重新定位菜单显示位置
+			RECT rcWindow;
+			GetWindowRect(GetDesktopWindow(), &rcWindow);
+
+			if (rc.right >rcWindow.right)
 			{
-				rc.right = point.x;
+				rc.right = m_BasedPoint.x;
 				rc.left = rc.right - nWidth;
 			}
-
-			if (dwAlignment & eMenuAlignment_Bottom)
+			if (rc.bottom > rcWindow.bottom)
 			{
-				rc.bottom = point.y;
+				rc.bottom = m_BasedPoint.y;
 				rc.top = rc.bottom - nHeight;
 			}
 
@@ -526,7 +512,7 @@ void CMenuElementUI::DoPaint(HDC hDC, const RECT& rcPaint)
 		TListInfoUI* pInfo = m_pOwner->GetListInfo();
 		int nVCenter = (m_rcItem.top + m_rcItem.bottom)/2;
 		RECT rcLine = {m_rcItem.left + pInfo->rcTextPadding.left , nVCenter , m_rcItem.right -pInfo->rcTextPadding.right  , nVCenter };
-		CRenderEngine::DrawLine(hDC, rcLine, m_cxyFixed.cy, m_dwSeparatorColor);
+		CRenderEngine::DrawLine(hDC, rcLine, 1, m_dwSeparatorColor);
 	}
 	else
 	{
@@ -728,7 +714,7 @@ CMenuWnd* CMenuElementUI::GetMenuWnd()
 
 void CMenuElementUI::SetAttribute(LPCTSTR pstrName, LPCTSTR pstrValue)
 {
-	if (_tcsicmp(pstrName,_T("separator")) == 0)	SetSeparatorType(_tcsicmp(pstrValue,_T("true")) == 0);
+	if (_tcsicmp(pstrName,_T("line")) == 0)	SetSeparatorType(_tcsicmp(pstrValue,_T("true")) == 0);
 	else if (_tcsicmp(pstrName,_T("itemchecked")) == 0)	SetMenuItemChecked(_tcsicmp(pstrValue,_T("true")) == 0);
 	else if (_tcscmp(pstrName, _T("fixedheight")) == 0) SetFixedHeight(_ttoi(pstrValue));
 	else if (_tcsicmp(pstrName,_T("linecolor")) == 0) {

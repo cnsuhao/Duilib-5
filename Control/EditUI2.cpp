@@ -38,7 +38,7 @@ namespace DuiLib
 
 	LPCTSTR CEditUI2::GetClass() const
 	{
-		return _T("CEditUI2");
+		return _T("EditUI2");
 	}
 
 	LPVOID CEditUI2::GetInterface(LPCTSTR pstrName)

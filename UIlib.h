@@ -75,7 +75,7 @@
 #include "Core/UIRender.h"
 #include "Utils/WinImplBase.h"
 #include "Utils/UICaret.h"
-
+#include "Utils/UITrayIcon.h"
 #include "Effect/UIAnimation.h"
 
 #include "Layout/UIVerticalLayout.h"

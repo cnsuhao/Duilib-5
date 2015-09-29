@@ -7,13 +7,11 @@ namespace DuiLib
 	{
 		memset(&m_trayData, 0, sizeof(m_trayData));
 		m_bEnabled		= false;
-		m_bVisible		= false;
-		m_bTwinkling	= false;
-		m_hWnd			= NULL;
-/*		pIDuiTimer		= NULL;*/
+		m_bVisible			= false;
+		m_bTwinkling		= false;
+		m_hWnd				= NULL;
 		m_uMessage		= UIEVENT_TRAYICON;
 	}
-
 
 	CUITrayIcon::~CUITrayIcon(void)
 	{
@@ -39,7 +37,7 @@ namespace DuiLib
 		if(_ToolTipText)
 			wcscpy(m_trayData.szTip,_ToolTipText);
 
-		Shell_NotifyIcon(NIM_ADD,&m_trayData);
+		Shell_NotifyIconW(NIM_ADD,&m_trayData);
 		m_bEnabled = true;
 	}
 
@@ -48,7 +46,7 @@ namespace DuiLib
 		/*if(pIDuiTimer)*/
 			StopTwinkling();
 
-		Shell_NotifyIcon(NIM_DELETE,&m_trayData);
+		Shell_NotifyIconW(NIM_DELETE,&m_trayData);
 		m_bEnabled		= false;
 		m_bVisible		= false;
 		m_bTwinkling	= false;
@@ -63,7 +61,7 @@ namespace DuiLib
 
 		if (!m_bEnabled) return FALSE;
 		m_trayData.uFlags = NIF_TIP;
-		return Shell_NotifyIcon(NIM_MODIFY, &m_trayData) == TRUE;
+		return Shell_NotifyIconW(NIM_MODIFY, &m_trayData) == TRUE;
 	}
 
 	bool CUITrayIcon::SetTooltipText( UINT _IDResource )
@@ -88,7 +86,7 @@ namespace DuiLib
 		m_trayData.hIcon = _Hicon;
 		
 		if (!m_bEnabled) return FALSE;
-		return Shell_NotifyIcon(NIM_MODIFY, &m_trayData) == TRUE;
+		return Shell_NotifyIconW(NIM_MODIFY, &m_trayData) == TRUE;
 
 		return false;
 	}
@@ -131,7 +129,7 @@ namespace DuiLib
 	void CUITrayIcon::RemoveIcon()
 	{
 		m_trayData.uFlags = 0;
-		Shell_NotifyIcon(NIM_DELETE, &m_trayData);
+		Shell_NotifyIconW(NIM_DELETE, &m_trayData);
 		m_bEnabled = FALSE;
 	}
 

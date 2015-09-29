@@ -163,12 +163,15 @@ LRESULT WindowImplBase::OnNcHitTest(UINT uMsg, WPARAM wParam, LPARAM lParam, BOO
 	}
 
 	RECT rcCaption = m_PaintManager.GetCaptionRect();
-	if( rcCaption.bottom == -1 || pt.x >= rcClient.left + rcCaption.left && pt.x < rcClient.right - rcCaption.right \
-		&& pt.y >= rcCaption.top && pt.y < rcCaption.bottom ) {
+	if( rcCaption.bottom == -1 || 
+		pt.x >= rcClient.left + rcCaption.left && pt.x < rcClient.right - rcCaption.right && 
+		pt.y >= rcCaption.top && pt.y < rcCaption.bottom ) {
 			CControlUI* pControl = static_cast<CControlUI*>(m_PaintManager.FindControl(pt));
+			OutputDebugString(pControl->GetClass());
 			if( pControl && _tcsicmp(pControl->GetClass(), _T("ButtonUI")) != 0 && 
 				_tcsicmp(pControl->GetClass(), _T("OptionUI")) != 0 &&
-				_tcsicmp(pControl->GetClass(), _T("TextUI")) != 0)
+				_tcsicmp(pControl->GetClass(), _T("TextUI")) != 0 && 
+				_tcsicmp(pControl->GetClass(), _T("EditUI2")) != 0)
 				return HTCAPTION;
 	}
 
