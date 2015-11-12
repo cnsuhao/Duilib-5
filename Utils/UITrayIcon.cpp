@@ -3,6 +3,90 @@
 
 namespace DuiLib
 {
+	CUITrayPos::CUITrayPos()
+	{
+		m_bTrackMouse = FALSE;
+		m_hExitEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+		m_hThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)TrackMousePt, this, 0, NULL);
+		InitializeCriticalSection(&m_cs);
+	}
+
+	CUITrayPos::~CUITrayPos()
+	{
+		if(m_hThread != NULL)
+		{
+			SetEvent(m_hExitEvent);
+			if(WaitForSingleObject(m_hThread, 1000) == WAIT_TIMEOUT)
+			{
+				TerminateThread(m_hThread, 0);
+			}
+
+			CloseHandle(m_hThread);
+			m_hThread = NULL;
+		}
+
+		if(m_hExitEvent != NULL)
+		{
+			CloseHandle(m_hExitEvent);
+			m_hExitEvent = NULL;
+		}
+
+		DeleteCriticalSection(&m_cs);
+	}
+
+	UINT CALLBACK CUITrayPos::TrackMousePt(PVOID pvClass)
+	{
+		POINT		ptMouse;
+		CUITrayPos* pTrayPos = (CUITrayPos*)pvClass;
+
+		while(WaitForSingleObject(pTrayPos->m_hExitEvent, 500) == WAIT_TIMEOUT)
+		{
+			EnterCriticalSection(&pTrayPos->m_cs);
+			BOOL bTrackMouse = pTrayPos->IsMouseHover();
+			LeaveCriticalSection(&pTrayPos->m_cs);
+
+			if(bTrackMouse == TRUE)
+			{
+				GetCursorPos(&ptMouse);
+				if(ptMouse.x != pTrayPos->m_ptMouse.x || ptMouse.y != pTrayPos->m_ptMouse.y)
+				{
+					pTrayPos->SetTrackMouse(FALSE);
+					pTrayPos->OnMouseLeave();
+				}
+			}
+		}
+
+		return TRUE;
+	}
+
+	void CUITrayPos::OnMouseMove()
+	{
+		EnterCriticalSection(&m_cs);
+
+		GetCursorPos(&m_ptMouse);
+		if(m_bTrackMouse == FALSE)
+		{
+			OnMouseHover();
+			m_bTrackMouse = TRUE;
+		}
+
+		LeaveCriticalSection(&m_cs);
+	}
+
+	void CUITrayPos::SetTrackMouse(BOOL bTrackMouse)
+	{
+		EnterCriticalSection(&m_cs);
+		m_bTrackMouse = bTrackMouse;
+		LeaveCriticalSection(&m_cs);
+	}
+
+	BOOL CUITrayPos::IsMouseHover()
+	{
+		return m_bTrackMouse;
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////
+
 	CUITrayIcon::CUITrayIcon(void)
 	{
 		memset(&m_trayData, 0, sizeof(m_trayData));
@@ -10,6 +94,7 @@ namespace DuiLib
 		m_bVisible			= false;
 		m_bTwinkling		= false;
 		m_hWnd				= NULL;
+		m_uID					= 0;
 		m_uMessage		= UIEVENT_TRAYICON;
 	}
 
@@ -29,11 +114,11 @@ namespace DuiLib
 		m_hIcon = LoadIcon(CPaintManagerUI::GetInstance(),MAKEINTRESOURCE(_IconIDResource));
 
 		m_trayData.cbSize = sizeof(NOTIFYICONDATA);
-		m_trayData.hWnd	 = _RecvHwnd;
-		m_trayData.uID	 = _IconIDResource;
+		m_trayData.hWnd	 = m_hWnd = _RecvHwnd;
+		m_trayData.uID	 = m_uID = _IconIDResource;
 		m_trayData.hIcon = m_hIcon;
 		m_trayData.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
-		m_trayData.uCallbackMessage = _Message;
+		m_trayData.uCallbackMessage = m_uMessage = _Message;
 		if(_ToolTipText)
 			wcscpy(m_trayData.szTip,_ToolTipText);
 
@@ -51,6 +136,7 @@ namespace DuiLib
 		m_bVisible		= false;
 		m_bTwinkling	= false;
 		m_hWnd			= NULL;
+		m_uID				= 0;
 		m_uMessage		= UIEVENT_TRAYICON;
 	}
 
@@ -153,6 +239,18 @@ namespace DuiLib
 // 		}
 		m_bTwinkling = false;
 		SetShowIcon();
+	}
+
+	void CUITrayIcon::OnMouseHover()
+	{
+		if(m_hWnd != NULL && IsWindow(m_hWnd))
+			PostMessage(m_hWnd, m_uMessage, m_uID, WM_MOUSEHOVER);
+	}
+
+	void CUITrayIcon::OnMouseLeave()
+	{
+		if (m_trayData.hWnd != NULL && IsWindow(m_trayData.hWnd))
+			PostMessage(m_hWnd, m_uMessage, m_uID, WM_MOUSELEAVE);
 	}
 
 // 	void CUITrayIcon::OnTimer( IDuiTimer* pTimer )
