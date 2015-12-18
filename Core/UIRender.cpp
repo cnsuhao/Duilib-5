@@ -1388,7 +1388,7 @@ void CRenderEngine::DrawText(HDC hDC, CPaintManagerUI* pManager, RECT& rc, LPCTS
     ::SetBkMode(hDC, TRANSPARENT);
     ::SetTextColor(hDC, RGB(GetBValue(dwTextColor), GetGValue(dwTextColor), GetRValue(dwTextColor)));
     HFONT hOldFont = (HFONT)::SelectObject(hDC, pManager->GetFont(iFont));
-    if (pManager->IsBackgroundTransparent() == TRUE && (uStyle & DT_CALCRECT) != DT_CALCRECT)
+    if (pManager->IsLayered() == TRUE && (uStyle & DT_CALCRECT) != DT_CALCRECT)
   		DrawTextUnderLayered(hDC, pstrText, pManager->GetFont(iFont), dwTextColor, rc, uStyle);
 	else
 		::DrawText(hDC, pstrText, -1, &rc, uStyle | DT_NOPREFIX);
@@ -2297,6 +2297,29 @@ void CRenderEngine::RestoreAalphaColor(LPBYTE pBits, int bitsWidth, PRECT rc)
 				pBits[x + 3] = 255;	
 		}
 	}
+}
+
+HBITMAP CRenderEngine::CreateARGB32Bitmap(HDC hDC, int cx, int cy, BYTE** pBits)
+{
+	LPBITMAPINFO lpbiSrc = NULL;
+	lpbiSrc = (LPBITMAPINFO) new BYTE[sizeof(BITMAPINFOHEADER)];
+	if (lpbiSrc == NULL) return NULL;
+
+	lpbiSrc->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	lpbiSrc->bmiHeader.biWidth = cx;
+	lpbiSrc->bmiHeader.biHeight = - cy;
+	lpbiSrc->bmiHeader.biPlanes = 1;
+	lpbiSrc->bmiHeader.biBitCount = 32;
+	lpbiSrc->bmiHeader.biCompression = BI_RGB;
+	lpbiSrc->bmiHeader.biSizeImage = cx * cy;
+	lpbiSrc->bmiHeader.biXPelsPerMeter = 0;
+	lpbiSrc->bmiHeader.biYPelsPerMeter = 0;
+	lpbiSrc->bmiHeader.biClrUsed = 0;
+	lpbiSrc->bmiHeader.biClrImportant = 0;
+
+	HBITMAP hBitmap = CreateDIBSection (hDC, lpbiSrc, DIB_RGB_COLORS, (void **)pBits, NULL, NULL);
+	delete [] lpbiSrc;
+	return hBitmap;
 }
 
 #ifdef RENDER_GDIPLUS

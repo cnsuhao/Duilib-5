@@ -375,8 +375,8 @@ void CControlUI::SetPos(RECT rc)
     if( rc.right < rc.left ) rc.right = rc.left;
     if( rc.bottom < rc.top ) rc.bottom = rc.top;
 
-    CDuiRect invalidateRc = m_rcItem;
-    if( ::IsRectEmpty(&invalidateRc) ) invalidateRc = rc;
+    CDuiRect InvalidateRc = m_rcItem;
+    if( ::IsRectEmpty(&InvalidateRc) ) InvalidateRc = rc;
 
     m_rcItem = rc;
     if( m_pManager == NULL ) return;
@@ -401,21 +401,21 @@ void CControlUI::SetPos(RECT rc)
     }
 
     m_bUpdateNeeded = false;
-    invalidateRc.Join(m_rcItem);
+    InvalidateRc.Join(m_rcItem);
 
     CControlUI* pParent = this;
     RECT rcTemp;
     RECT rcParent;
     while( pParent = pParent->GetParent() )
     {
-        rcTemp = invalidateRc;
+        rcTemp = InvalidateRc;
         rcParent = pParent->GetPos();
-        if( !::IntersectRect(&invalidateRc, &rcTemp, &rcParent) ) 
+        if( !::IntersectRect(&InvalidateRc, &rcTemp, &rcParent) ) 
         {
             return;
         }
     }
-    m_pManager->Invalidate(invalidateRc);
+    m_pManager->Invalidate(InvalidateRc);
 }
 
 int CControlUI::GetWidth() const
@@ -857,6 +857,17 @@ CDuiString CControlUI::GetVirtualWnd() const
 	return str;
 }
 
+void CControlUI::SetStyle(LPCTSTR pstrValue)
+{
+	if(m_pManager != NULL) {
+		LPCTSTR pStyle = m_pManager->GetStyleAttributeList(pstrValue);
+		if( pStyle != NULL) {
+			ApplyAttributeList(pStyle);
+			return;
+		}
+	}
+}
+
 void CControlUI::SetAttribute(LPCTSTR pstrName, LPCTSTR pstrValue)
 {
     if( _tcscmp(pstrName, _T("pos")) == 0 ) {
@@ -991,6 +1002,7 @@ void CControlUI::SetAttribute(LPCTSTR pstrName, LPCTSTR pstrValue)
     else if( _tcscmp(pstrName, _T("shortcut")) == 0 ) SetShortcut(pstrValue[0]);
     else if( _tcscmp(pstrName, _T("menu")) == 0 ) SetContextMenuUsed(_tcscmp(pstrValue, _T("true")) == 0);
 	else if( _tcscmp(pstrName, _T("virtualwnd")) == 0 ) SetVirtualWnd(pstrValue);
+	else if( _tcscmp(pstrName, _T("style")) == 0) SetStyle(pstrValue);
 }
 
 CControlUI* CControlUI::ApplyAttributeList(LPCTSTR pstrList)

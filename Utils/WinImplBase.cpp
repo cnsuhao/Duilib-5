@@ -248,7 +248,10 @@ LRESULT WindowImplBase::OnSysCommand(UINT uMsg, WPARAM wParam, LPARAM lParam, BO
 		SendMessage(WM_CLOSE);
 		return 0;
 	}
+	//如果当前消息是还原命令，则交给UIManager来控制
 	LRESULT lRes = CWindowWnd::HandleMessage(uMsg, wParam, lParam);
+	if (SC_RESTORE == (wParam & 0xfff0))
+		bHandled = FALSE;
 	return lRes;
 }
 

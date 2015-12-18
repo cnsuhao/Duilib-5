@@ -33,6 +33,7 @@ namespace DuiLib
 		void	SetVisibleTag(bool _IsVisible);
 		bool	GetVisibleTag();
 		void	SetItemText(LPCTSTR pstrValue);
+		void SetItemFont(int iFont);
 		CDuiString	GetItemText();
 		void	CheckBoxSelected(bool _Selected);
 		bool	IsCheckBoxSelected() const;

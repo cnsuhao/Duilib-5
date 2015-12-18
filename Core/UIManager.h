@@ -169,6 +169,7 @@ public:
     void Init(HWND hWnd);
     void NeedUpdate();
     void Invalidate(RECT& rcItem);
+	void Invalidate();
 
     HDC GetPaintDC() const;
     HWND GetPaintWindow() const;
@@ -190,8 +191,13 @@ public:
     void SetMaxInfo(int cx, int cy);
 	int GetTransparent() const;
     void SetTransparent(int nOpacity);
-    void SetBackgroundTransparent(bool bTrans);
-	bool IsBackgroundTransparent();
+    void SetLayered(bool bTrans);
+	bool IsLayered();
+
+	void SetWindowShadow(bool bShadow);
+	bool IsWindowShadow();
+	void SetShadowImage(LPCTSTR lpszShadowImage);
+
     bool IsShowUpdateRect() const;
     void SetShowUpdateRect(bool show);
 	void SetWindowMaxBox(bool bMaxBox);
@@ -263,6 +269,12 @@ public:
     const CStdStringPtrMap& GetDefaultAttribultes() const;
     void RemoveAllDefaultAttributeList();
 
+	void AddStyleAttributeList(LPCTSTR pStrControlName, LPCTSTR pStrControlAttrList);
+	LPCTSTR GetStyleAttributeList(LPCTSTR pName) const;
+	bool RemoveStyleAttributeList(LPCTSTR pStrControlName);
+	const CStdStringPtrMap& GetStyleAttributeList() const;
+	void RemoveAllStyleAttributeList();
+	
     bool AttachDialog(CControlUI* pControl);
     bool InitControls(CControlUI* pControl, CControlUI* pParent = NULL);
     void ReapObjects(CControlUI* pControl);
@@ -370,13 +382,14 @@ private:
     bool m_bUpdateNeeded;
     bool m_bFocusNeeded;
     bool m_bOffscreenPaint;
-    bool m_bAlphaBackground;
+    bool m_bLayered;
+	bool m_bShadow;
+	CDuiString m_strShadowImage;
     bool m_bMouseTracking;
     bool m_bMouseCapture;
 	bool m_bUsedVirtualWnd;
 	LPBYTE	m_pBmpOffscreenBits;
-	RECT	m_rcInvalidate;			// 半透明异形窗体中，保存刷新区域
-	bool m_bIsRestore;
+	RECT	m_rcLayeredUpdate;
     //
     CStdPtrArray m_aNotifiers;
     CStdPtrArray m_aTimers;
@@ -400,6 +413,7 @@ private:
 
     CStdStringPtrMap m_mImageHash;
     CStdStringPtrMap m_DefaultAttrHash;
+	CStdStringPtrMap m_StyleHash;
     //
     static HINSTANCE m_hInstance;
     static HINSTANCE m_hResourceInstance;

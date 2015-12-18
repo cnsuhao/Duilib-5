@@ -174,6 +174,7 @@ public:
 	void SetVirtualWnd(LPCTSTR pstrValue);
 	CDuiString GetVirtualWnd() const;
 
+	void SetStyle(LPCTSTR pstrValue);
 public:
     CEventSource OnInit;
     CEventSource OnDestroy;

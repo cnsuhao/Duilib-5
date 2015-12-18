@@ -872,7 +872,7 @@ HRESULT InitDefaultCharFormat(CRichEditUI* re, CHARFORMAT2W* pcf, HFONT hfont)
     ::GetObject(hfont, sizeof(LOGFONT), &lf);
 
     DWORD dwColor = re->GetTextColor();
-	if(re->GetManager()->IsBackgroundTransparent())
+	if(re->GetManager()->IsLayered())
 		CRenderEngine::CheckAalphaColor(dwColor);
 
     pcf->cbSize = sizeof(CHARFORMAT2W);
@@ -1198,14 +1198,14 @@ void CTxtWinHost::TxViewChange(BOOL fUpdate)
 
 BOOL CTxtWinHost::TxCreateCaret(HBITMAP hbmp, INT xWidth, INT yHeight)
 {
-	if (m_re->GetManager()->IsBackgroundTransparent())
+	if (m_re->GetManager()->IsLayered())
 		return m_re->CreateCaret(xWidth,yHeight);
 	return ::CreateCaret(m_re->GetManager()->GetPaintWindow(), hbmp, xWidth, yHeight);
 }
 
 BOOL CTxtWinHost::TxShowCaret(BOOL fShow)
 {
-	if (m_re->GetManager()->IsBackgroundTransparent())
+	if (m_re->GetManager()->IsLayered())
 		return	m_re->ShowCaret(fShow);
 	if(fShow)
 		return ::ShowCaret(m_re->GetManager()->GetPaintWindow());
@@ -1215,7 +1215,7 @@ BOOL CTxtWinHost::TxShowCaret(BOOL fShow)
 
 BOOL CTxtWinHost::TxSetCaretPos(INT x, INT y)
 {
-	if (m_re->GetManager()->IsBackgroundTransparent())
+	if (m_re->GetManager()->IsLayered())
 		m_re->SetCaretPos(x,y);
 	return ::SetCaretPos(x, y);
 }
@@ -1416,6 +1416,17 @@ HRESULT CTxtWinHost::TxNotify(DWORD iNotify, void *pv)
         rc.right  = rc.left + preqsz->rc.right;
         SetClientRect(&rc);
     }
+	else if (iNotify == EN_LINK){
+		ENLINK* l_pENLink = (ENLINK*)pv;
+		if (l_pENLink->msg == WM_LBUTTONDOWN || l_pENLink->msg == WM_LBUTTONDBLCLK)
+		{
+			CHARRANGE crCharRange;
+			m_re->GetSel(crCharRange);//得到原来选中的字符串
+			m_re->SetSel(l_pENLink->chrg);
+			CDuiString strSelText = m_re->GetSelText();
+			m_re->SetSel(crCharRange);
+		}
+	}
     m_re->OnTxNotify(iNotify, pv);
     return S_OK;
 }
@@ -2186,7 +2197,7 @@ DWORD CRichEditUI::GetSelectionCharFormat(CHARFORMAT2 &cf) const
 
 bool CRichEditUI::SetSelectionCharFormat(CHARFORMAT2 &cf)
 {
-	if(m_pManager->IsBackgroundTransparent())
+	if(m_pManager->IsLayered())
 	{
 		CRenderEngine::CheckAalphaColor(cf.crTextColor);
 		CRenderEngine::CheckAalphaColor(cf.crBackColor);
@@ -2631,7 +2642,7 @@ void CRichEditUI::DoEvent(TEventUI& event)
         }
     }
 	if( event.Type == UIEVENT_SETFOCUS ) {
-		if (GetManager()->IsBackgroundTransparent())
+		if (GetManager()->IsLayered())
 			GetManager()->SetTimer(this,IME_RICHEDIT_BLINK_TIMER_ID,GetCaretBlinkTime());
 		if( m_pTwh ) {
 			m_pTwh->OnTxInPlaceActivate(NULL);
@@ -2643,7 +2654,7 @@ void CRichEditUI::DoEvent(TEventUI& event)
 		}
 	}
 	if( event.Type == UIEVENT_KILLFOCUS )  {
-		if (GetManager()->IsBackgroundTransparent())
+		if (GetManager()->IsLayered())
 			GetManager()->KillTimer(this);
 		if( m_pTwh ) {
 			m_pTwh->OnTxInPlaceActivate(NULL);
@@ -2657,7 +2668,7 @@ void CRichEditUI::DoEvent(TEventUI& event)
 		if( m_pTwh ) {
 			m_pTwh->GetTextServices()->TxSendMessage(WM_TIMER, event.wParam, event.lParam, 0);
 		} 
-		if (GetManager()->IsBackgroundTransparent() && event.wParam == IME_RICHEDIT_BLINK_TIMER_ID)
+		if (GetManager()->IsLayered() && event.wParam == IME_RICHEDIT_BLINK_TIMER_ID)
 		{
 			m_bShowCaret = !m_bShowCaret;
 			InvalidateRect(GetManager()->GetPaintWindow(),&m_rcPos,FALSE);
@@ -2998,7 +3009,7 @@ void CRichEditUI::DoPaint(HDC hDC, const RECT& rcPaint)
 	if (GetSel(chRange) != false)
 		bShow = chRange.cpMin == chRange.cpMax ? true : false;
 
-	if (bShow && GetManager()->IsBackgroundTransparent() && m_bShowCaret && m_bFocused)
+	if (bShow && GetManager()->IsLayered() && m_bShowCaret && m_bFocused)
 		CRenderEngine::DrawColor(hDC,m_rcPos,m_dwCaretColor);
 }
 

@@ -303,6 +303,17 @@ namespace DuiLib
 	}
 
 	//************************************
+	// 函数名称: SetItemFont
+	// 返回类型: void
+	// 参数信息: int iFont
+	// 函数说明: 
+	//************************************
+	void CTreeNodeUI::SetItemFont(int iFont)
+	{
+		pItemButton->SetFont(iFont);
+	}
+
+	//************************************
 	// 函数名称: GetItemText
 	// 返回类型: UiLib::CDuiString
 	// 函数说明: 
@@ -833,7 +844,7 @@ namespace DuiLib
 			return -1;
 
 		CTreeNodeUI* pParent = static_cast<CTreeNodeUI*>(GetItemAt(iIndex));
-		if(!pParent)
+		if (pParent != NULL)
 			return -1;
 
 		pControl->OnNotify += MakeDelegate(this,&CTreeViewUI::OnDBClickItem);
@@ -953,7 +964,7 @@ namespace DuiLib
 	bool CTreeViewUI::OnCheckBoxChanged( void* param )
 	{
 		TNotifyUI* pMsg = (TNotifyUI*)param;
-		if(pMsg->sType == _T("selectchanged"))
+		if(pMsg->sType == DUI_MSGTYPE_SELECTCHANGED)
 		{
 			CCheckBoxUI* pCheckBox = (CCheckBoxUI*)pMsg->pSender;
 			CTreeNodeUI* pItem = (CTreeNodeUI*)pCheckBox->GetParent()->GetParent();
@@ -972,7 +983,7 @@ namespace DuiLib
 	bool CTreeViewUI::OnFolderChanged( void* param )
 	{
 		TNotifyUI* pMsg = (TNotifyUI*)param;
-		if(pMsg->sType == _T("selectchanged"))
+		if(pMsg->sType == DUI_MSGTYPE_SELECTCHANGED)
 		{
 			CCheckBoxUI* pFolder = (CCheckBoxUI*)pMsg->pSender;
 			CTreeNodeUI* pItem = (CTreeNodeUI*)pFolder->GetParent()->GetParent();
@@ -992,7 +1003,7 @@ namespace DuiLib
 	bool CTreeViewUI::OnDBClickItem( void* param )
 	{
 		TNotifyUI* pMsg = (TNotifyUI*)param;
-		if(pMsg->sType == _T("itemdbclick"))
+		if(pMsg->sType == DUI_MSGTYPE_ITEMDBCLICK)
 		{
 			CTreeNodeUI* pItem		= static_cast<CTreeNodeUI*>(pMsg->pSender);
 			CCheckBoxUI* pFolder	= pItem->GetFolderButton();

@@ -2,7 +2,9 @@
 
 namespace DuiLib {
 
-CDialogBuilder::CDialogBuilder() : m_pCallback(NULL), m_pstrtype(NULL)
+CDialogBuilder::CDialogBuilder() 
+	: m_pCallback(NULL)
+	, m_pstrtype(NULL)
 {
 
 }
@@ -127,6 +129,24 @@ CControlUI* CDialogBuilder::Create(IDialogBuilderCallback* pCallback, CPaintMana
                     pManager->AddDefaultAttributeList(pControlName, pControlValue);
                 }
             }
+			else if (_tcscmp(pstrClass,_T("Style")) == 0){
+				nAttributes = node.GetAttributeCount();
+				LPCTSTR pControlName = NULL;
+				LPCTSTR pControlValue = NULL;
+				for( int i = 0; i < nAttributes; i++ ) {
+					pstrName = node.GetAttributeName(i);
+					pstrValue = node.GetAttributeValue(i);
+					if( _tcscmp(pstrName, _T("name")) == 0 ) {
+						pControlName = pstrValue;
+					}
+					else if( _tcscmp(pstrName, _T("value")) == 0 ) {
+						pControlValue = pstrValue;
+					}
+				}
+				if( pControlName ) {
+					pManager->AddStyleAttributeList(pControlName, pControlValue);
+				}
+			}
         }
 
         pstrClass = root.GetName();
@@ -187,9 +207,15 @@ CControlUI* CDialogBuilder::Create(IDialogBuilderCallback* pCallback, CPaintMana
                     else if( _tcscmp(pstrName, _T("alpha")) == 0 ) {	//不能和bktrans同时使用
                         pManager->SetTransparent(_ttoi(pstrValue));
                     } 
-                    else if( _tcscmp(pstrName, _T("bktrans")) == 0 ) { //不能和alpha同时使用
-                        pManager->SetBackgroundTransparent(_tcscmp(pstrValue, _T("true")) == 0);
+                    else if( _tcscmp(pstrName, _T("bktrans")) == 0 || _tcscmp(pstrName,_T("layered")) == 0) { //不能和alpha同时使用
+                        pManager->SetLayered(_tcscmp(pstrValue, _T("true")) == 0);
                     } 
+					else if ( _tcscmp(pstrName, _T("shadow")) == 0){
+						pManager->SetWindowShadow(_tcscmp(pstrValue, _T("true")) == 0);
+					}
+					else if (_tcscmp(pstrName, _T("shadowimage")) == 0){
+						pManager->SetShadowImage(pstrValue);
+					}
                     else if( _tcscmp(pstrName, _T("disabledfontcolor")) == 0 ) {
                         if( *pstrValue == _T('#')) pstrValue = ::CharNext(pstrValue);
                         LPTSTR pstr = NULL;
