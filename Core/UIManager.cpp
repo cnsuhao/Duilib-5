@@ -674,7 +674,7 @@ bool CPaintManagerUI::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, LR
 			}
 
 			if( m_bUpdateNeeded ) {
-				m_bUpdateNeeded = false;
+				//m_bUpdateNeeded = false;
 				if( !::IsRectEmpty(&rcClient) ) {
 					if( m_pRoot->IsUpdateNeeded() ) {
 						if( m_hDcOffscreen != NULL ) ::DeleteDC(m_hDcOffscreen);
@@ -686,12 +686,7 @@ bool CPaintManagerUI::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, LR
 					else {
 						CControlUI* pControl = NULL;
 					    while(pControl = m_pRoot->FindControl(__FindControlFromUpdate, NULL, UIFIND_VISIBLE | UIFIND_ME_FIRST))
-						{
-							/*if (pControl->IsFloat())
-								pControl->SetPos(pControl->GetRelativePos());
-							else*/
 								pControl->SetPos(pControl->GetPos());
-						}
 					}
 					// We'll want to notify the window when it is first initialized
 					// with the correct layout. The window form would take the time
@@ -756,7 +751,10 @@ bool CPaintManagerUI::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, LR
 			}
 			// All Done!
 			::EndPaint(m_hWndPaint, &ps);
-			if( m_bUpdateNeeded ) Invalidate();
+			if( m_bUpdateNeeded ){
+				Invalidate();
+				m_bUpdateNeeded = false;
+			}
 			return true;
 		}
     case WM_PRINTCLIENT:

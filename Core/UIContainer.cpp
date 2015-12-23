@@ -14,7 +14,8 @@ namespace DuiLib
 		m_bMouseChildEnabled(true),
 		m_pVerticalScrollBar(NULL),
 		m_pHorizontalScrollBar(NULL),
-		m_bScrollProcess(false)
+		m_bScrollProcess(false),
+		m_nScrollStepSize(0)
 	{
 		::ZeroMemory(&m_rcInset, sizeof(m_rcInset));
 	}
@@ -205,6 +206,19 @@ namespace DuiLib
 		}
 	}
 
+	void CContainerUI::SetEnabled(bool bEnabled)
+	{
+		if( m_bEnabled == bEnabled ) return;
+
+		m_bEnabled = bEnabled;
+
+		for( int it = 0; it < m_items.GetSize(); it++ ) {
+			static_cast<CControlUI*>(m_items[it])->SetEnabled(m_bEnabled);
+		}
+
+		Invalidate();
+	}
+
 	void CContainerUI::SetMouseEnabled(bool bEnabled)
 	{
 		if( m_pVerticalScrollBar != NULL ) m_pVerticalScrollBar->SetMouseEnabled(bEnabled);
@@ -357,11 +371,26 @@ namespace DuiLib
 		Invalidate();
 	}
 
+	void CContainerUI::SetScrollStepSize(int nSize)
+	{
+		if (nSize >0)
+			m_nScrollStepSize = nSize;
+	}
+
+	int CContainerUI::GetScrollStepSize() const
+	{
+		return m_nScrollStepSize;
+	}
+
 	void CContainerUI::LineUp()
 	{
-		int cyLine = 8;
-		if( m_pManager ) cyLine = m_pManager->GetDefaultFontInfo()->tm.tmHeight + 8;
-
+		int cyLine = m_nScrollStepSize;
+		if (m_nScrollStepSize == 0)
+		{
+			cyLine = 8;
+			if( m_pManager ) cyLine = m_pManager->GetDefaultFontInfo()->tm.tmHeight + 8;
+		}
+		
 		SIZE sz = GetScrollPos();
 		sz.cy -= cyLine;
 		SetScrollPos(sz);
@@ -369,8 +398,12 @@ namespace DuiLib
 
 	void CContainerUI::LineDown()
 	{
-		int cyLine = 8;
-		if( m_pManager ) cyLine = m_pManager->GetDefaultFontInfo()->tm.tmHeight + 8;
+		int cyLine = m_nScrollStepSize;
+		if (m_nScrollStepSize == 0)
+		{
+			cyLine = 8;
+			if( m_pManager ) cyLine = m_pManager->GetDefaultFontInfo()->tm.tmHeight + 8;
+		}
 
 		SIZE sz = GetScrollPos();
 		sz.cy += cyLine;
@@ -411,15 +444,19 @@ namespace DuiLib
 
 	void CContainerUI::LineLeft()
 	{
+		int cxLine = m_nScrollStepSize == 0 ? 8 : m_nScrollStepSize;
+
 		SIZE sz = GetScrollPos();
-		sz.cx -= 8;
+		sz.cx -= cxLine;
 		SetScrollPos(sz);
 	}
 
 	void CContainerUI::LineRight()
 	{
+		int cxLine = m_nScrollStepSize == 0 ? 8 : m_nScrollStepSize;
+
 		SIZE sz = GetScrollPos();
-		sz.cx += 8;
+		sz.cx += cxLine;
 		SetScrollPos(sz);
 	}
 
@@ -575,6 +612,7 @@ namespace DuiLib
 			if( GetHorizontalScrollBar() ) GetHorizontalScrollBar()->ApplyAttributeList(pstrValue);
 		}
 		else if( _tcscmp(pstrName, _T("childpadding")) == 0 ) SetChildPadding(_ttoi(pstrValue));
+		else if( _tcscmp(pstrName, _T("scrollstepsize")) == 0) SetScrollStepSize(_ttoi(pstrValue));
 		else CControlUI::SetAttribute(pstrName, pstrValue);
 	}
 
@@ -655,22 +693,7 @@ namespace DuiLib
 
 		CRenderClip clip;
 		CRenderClip::GenerateClip(hDC, rcTemp, clip);
-		//////////////////////////////////////////////////////////////////////////
-		///modify by gechunping on 2014-03-31  for paint border on top layer
-		/// orgin is  //CControlUI::DoPaint(hDC, rcPaint);
-		if( !::IntersectRect(&m_rcPaint, &rcPaint, &m_rcItem) ) return;
-		// »æÖÆÑ­Ðò£º±³¾°ÑÕÉ«->±³¾°Í¼->×´Ì¬Í¼->ÎÄ±¾->±ß¿ò
-		if( m_cxyBorderRound.cx > 0 || m_cxyBorderRound.cy > 0 ) {
-#ifndef RENDER_GDIPLUS
-			CRenderClip roundClip;
-			CRenderClip::GenerateRoundClip(hDC, m_rcPaint,  m_rcItem, m_cxyBorderRound.cx, m_cxyBorderRound.cy, roundClip);
-#endif
-		}
-		PaintBkColor(hDC);
-		PaintBkImage(hDC);
-		PaintStatusImage(hDC);
-		PaintText(hDC);
-		//////////////////////////////////////////////////////////////////////////
+		CControlUI::DoPaint(hDC, rcPaint);
 
 		if( m_items.GetSize() > 0 ) {
 		RECT rc = m_rcItem;
@@ -724,11 +747,6 @@ namespace DuiLib
 				m_pHorizontalScrollBar->DoPaint(hDC, rcPaint);
 			}
 		}
-		//////////////////////////////////////////////////////////////////////////
-		///modify by gechunping on 2014-03-31  for paint border on top layer
-		PaintBorder(hDC);
-		
-		//////////////////////////////////////////////////////////////////////////
 	}
 
 	void CContainerUI::SetFloatPos(int iIndex)

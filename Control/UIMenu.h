@@ -5,7 +5,7 @@
 #pragma once
 #endif
 
-#include "Utils/observer_impl_base.hpp"
+#include "Utils/observer_impl_base.h"
 
 #define	MENU_TYPE_XML			_T("xml")		//
 

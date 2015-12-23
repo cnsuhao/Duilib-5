@@ -74,7 +74,6 @@
 #include "Core/UIDlgBuilder.h"
 #include "Core/UIRender.h"
 #include "Utils/WinImplBase.h"
-#include "Utils/UICaret.h"
 #include "Utils/UITrayIcon.h"
 #include "Effect/UIAnimation.h"
 
@@ -96,7 +95,6 @@
 #include "Control/UIText.h"
 #include "Control/UIEdit.h"
 #include "Control/EditUI2.h"
-#include "Control/UIIPAddress.h"
 
 #include "Control/UIButton.h"
 #include "Control/UIOption.h"

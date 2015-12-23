@@ -177,6 +177,8 @@ public:
     IListCallbackUI* GetTextCallback() const;
     void SetTextCallback(IListCallbackUI* pCallback);
 
+	void SetScrollStepSize(int nSize);
+
     SIZE GetScrollPos() const;
     SIZE GetScrollRange() const;
     void SetScrollPos(SIZE szPos);

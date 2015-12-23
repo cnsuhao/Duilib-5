@@ -343,10 +343,6 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\Utils\UICaret.cpp"
-					>
-				</File>
-				<File
 					RelativePath=".\Utils\UIDelegate.cpp"
 					>
 				</File>
@@ -479,10 +475,6 @@
 					>
 				</File>
 				<File
-					RelativePath=".\Control\UIIPAddress.cpp"
-					>
-				</File>
-				<File
 					RelativePath=".\Control\UILabel.cpp"
 					>
 				</File>
@@ -576,11 +568,7 @@
 					>
 				</File>
 				<File
-					RelativePath=".\Utils\observer_impl_base.hpp"
-					>
-				</File>
-				<File
-					RelativePath=".\Utils\UICaret.h"
+					RelativePath=".\Utils\observer_impl_base.h"
 					>
 				</File>
 				<File
@@ -721,10 +709,6 @@
 				</File>
 				<File
 					RelativePath=".\Control\UIFlash.h"
-					>
-				</File>
-				<File
-					RelativePath=".\Control\UIIPAddress.h"
 					>
 				</File>
 				<File

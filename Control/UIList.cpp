@@ -765,6 +765,12 @@ void CListUI::SetTextCallback(IListCallbackUI* pCallback)
     m_pCallback = pCallback;
 }
 
+void CListUI::SetScrollStepSize(int nSize)
+{
+	if (m_pList)
+		m_pList->SetScrollStepSize(nSize);
+}
+
 SIZE CListUI::GetScrollPos() const
 {
     return m_pList->GetScrollPos();
