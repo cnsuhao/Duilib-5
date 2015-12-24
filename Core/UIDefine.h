@@ -218,11 +218,11 @@ protected:                                                                \
 ///
 
 #define  DUI_CTR_EDIT                            (_T("Edit"))
-#define  DUI_CTR_EDIT_EX                         (_T("Edit2"))
 #define  DUI_CTR_LIST                            (_T("List"))
 #define  DUI_CTR_TEXT                            (_T("Text"))
 #define  DUI_CTR_MENU						     (_T("Menu"))
 
+#define  DUI_CTR_EDIT_EX                         (_T("Edit2"))
 #define  DUI_CTR_COMBO                           (_T("Combo"))
 #define  DUI_CTR_LABEL                           (_T("Label"))
 #define  DUI_CTR_FLASH							 (_T("Flash"))

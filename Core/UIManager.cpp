@@ -105,9 +105,8 @@ m_pBmpOffscreenBits(NULL)
     ::GetObject(::GetStockObject(DEFAULT_GUI_FONT), sizeof(LOGFONT), &lf);
     lf.lfCharSet = DEFAULT_CHARSET;
 	if (CPaintManagerUI::m_pStrDefaultFontName.GetLength()>0)
-	{
 		_tcscpy_s(lf.lfFaceName, LF_FACESIZE, CPaintManagerUI::m_pStrDefaultFontName.GetData());
-	}
+
     HFONT hDefaultFont = ::CreateFontIndirect(&lf);
     m_DefaultFontInfo.hFont = hDefaultFont;
     m_DefaultFontInfo.sFontName = lf.lfFaceName;
@@ -425,31 +424,30 @@ int CPaintManagerUI::GetTransparent() const
 }
 void CPaintManagerUI::SetTransparent(int nOpacity)
 {
-	if (nOpacity<0)
-		m_nOpacity = 0;
-	else if (nOpacity>255)
-		m_nOpacity = 255;
-	else
-		m_nOpacity = nOpacity;
-    if( m_hWndPaint != NULL ) {
-        typedef BOOL (__stdcall *PFUNCSETLAYEREDWINDOWATTR)(HWND, COLORREF, BYTE, DWORD);
-        PFUNCSETLAYEREDWINDOWATTR fSetLayeredWindowAttributes;
+	m_nOpacity = nOpacity;
+    if( m_hWndPaint == NULL )
+		return;
+	
+    typedef BOOL (__stdcall *PFUNCSETLAYEREDWINDOWATTR)(HWND, COLORREF, BYTE, DWORD);
+    PFUNCSETLAYEREDWINDOWATTR fSetLayeredWindowAttributes;
 
-        HMODULE hUser32 = ::GetModuleHandle(_T("User32.dll"));
-        if (hUser32)
-        {
-            fSetLayeredWindowAttributes = 
-                (PFUNCSETLAYEREDWINDOWATTR)::GetProcAddress(hUser32, "SetLayeredWindowAttributes");
-            if( fSetLayeredWindowAttributes == NULL ) return;
-        }
-
-        DWORD dwStyle = ::GetWindowLong(m_hWndPaint, GWL_EXSTYLE);
-        DWORD dwNewStyle = dwStyle;
-        if( nOpacity >= 0 && nOpacity < 256 ) dwNewStyle |= WS_EX_LAYERED;
-        else dwNewStyle &= ~WS_EX_LAYERED;
-        if(dwStyle != dwNewStyle) ::SetWindowLong(m_hWndPaint, GWL_EXSTYLE, dwNewStyle);
-        fSetLayeredWindowAttributes(m_hWndPaint, 0, nOpacity, LWA_ALPHA);
+    HMODULE hUser32 = ::GetModuleHandle(_T("User32.dll"));
+    if (hUser32)
+    {
+        fSetLayeredWindowAttributes = 
+            (PFUNCSETLAYEREDWINDOWATTR)::GetProcAddress(hUser32, "SetLayeredWindowAttributes");
+        if( fSetLayeredWindowAttributes == NULL ) return;
     }
+
+    DWORD dwStyle = ::GetWindowLong(m_hWndPaint, GWL_EXSTYLE);
+    DWORD dwNewStyle = dwStyle;
+    if( nOpacity >= 0 && nOpacity < 256 ) dwNewStyle |= WS_EX_LAYERED;
+    else dwNewStyle &= ~WS_EX_LAYERED;
+
+    if(dwStyle != dwNewStyle) 
+		::SetWindowLong(m_hWndPaint, GWL_EXSTYLE, dwNewStyle);
+
+    fSetLayeredWindowAttributes(m_hWndPaint, 0, nOpacity, LWA_ALPHA);
 }
 
 void CPaintManagerUI::SetWindowShadow(bool bShadow)
@@ -668,13 +666,14 @@ bool CPaintManagerUI::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, LR
 					::SetWindowLong(m_hWndPaint, GWL_EXSTYLE, dwNewExStyle);
 				m_bOffscreenPaint = true;
 				UnionRect(&rcPaint, &rcPaint, &m_rcLayeredUpdate);
+				
 				if( rcPaint.right > rcClient.right ) rcPaint.right = rcClient.right;
 				if( rcPaint.bottom > rcClient.bottom ) rcPaint.bottom = rcClient.bottom;
 				::ZeroMemory(&m_rcLayeredUpdate, sizeof(m_rcLayeredUpdate));
 			}
 
-			if( m_bUpdateNeeded ) {
-				//m_bUpdateNeeded = false;
+			if( IsNeedUpdate() ) {
+				NeedUpdate(false);
 				if( !::IsRectEmpty(&rcClient) ) {
 					if( m_pRoot->IsUpdateNeeded() ) {
 						if( m_hDcOffscreen != NULL ) ::DeleteDC(m_hDcOffscreen);
@@ -709,6 +708,7 @@ bool CPaintManagerUI::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, LR
 				ASSERT(m_hDcOffscreen);
 				ASSERT(m_hbmpOffscreen);
 			}
+
 			// Begin Windows paint
 			PAINTSTRUCT ps = { 0 };
 			::BeginPaint(m_hWndPaint, &ps);
@@ -738,10 +738,6 @@ bool CPaintManagerUI::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, LR
 					::BitBlt(m_hDcPaint, rcPaint.left, rcPaint.top, rcPaint.right - rcPaint.left, rcPaint.bottom - rcPaint.top, m_hDcOffscreen, rcPaint.left, rcPaint.top, SRCCOPY);
 				}
 				::SelectObject(m_hDcOffscreen, hOldBitmap);
-
-				if( IsShowUpdateRect() ) {
-					CRenderEngine::DrawRect(m_hDcPaint, rcPaint, 1, 0xFFFF0000);
-				}
 			}
 			else {
 				// A standard paint job
@@ -751,10 +747,6 @@ bool CPaintManagerUI::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, LR
 			}
 			// All Done!
 			::EndPaint(m_hWndPaint, &ps);
-			if( m_bUpdateNeeded ){
-				Invalidate();
-				m_bUpdateNeeded = false;
-			}
 			return true;
 		}
     case WM_PRINTCLIENT:
@@ -805,6 +797,8 @@ bool CPaintManagerUI::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, LR
                 m_pFocus->Event(event);
             }
             if( m_pRoot != NULL ) m_pRoot->NeedUpdate();
+			if (IsNeedUpdate())
+				Invalidate();
         }
         return true;
     case WM_TIMER:
@@ -1112,6 +1106,7 @@ bool CPaintManagerUI::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, LR
             if( (pControl->GetControlFlags() & UIFLAG_SETCURSOR) == 0 ) break;
             TEventUI event = { 0 };
             event.Type = UIEVENT_SETCURSOR;
+			event.pSender = pControl;
             event.wParam = wParam;
             event.lParam = lParam;
             event.ptMouse = pt;
@@ -1169,9 +1164,14 @@ bool CPaintManagerUI::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, LR
     return false;
 }
 
-void CPaintManagerUI::NeedUpdate()
+bool CPaintManagerUI::IsNeedUpdate()
 {
-    m_bUpdateNeeded = true;
+	return m_bUpdateNeeded;
+}
+
+void CPaintManagerUI::NeedUpdate(bool bNeedUpdate /*= true*/ )
+{
+    m_bUpdateNeeded = bNeedUpdate;
 }
 
 void CPaintManagerUI::Invalidate()

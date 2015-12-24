@@ -51,110 +51,6 @@ CControlUI::~CControlUI()
     if( m_pManager != NULL ) m_pManager->ReapObjects(this);
 }
 
-///////////消息调试使用///////////////////
-#ifdef _DEBUG
-void CControlUI::OutputDebugEventString(TEventUI& event)
-{
-	CDuiString strDebugEventString;
-	int nType = event.Type;
-	strDebugEventString.Format(_T("ControlName:%s,Type:%d[%s].\r\n"),
-								GetClass(),nType,GetEventName(nType));
-	OutputDebugString(strDebugEventString);
-}
-
-CDuiString CControlUI::GetEventName(int Type)
-{
-	LPCTSTR lpszEventName = NULL;
-	switch(Type)
-	{
-		case UIEVENT__FIRST:
-				lpszEventName = _T("消息事件开始");
-			break;
-		case UIEVENT__KEYBEGIN:
-				lpszEventName = _T("键盘事件开始");
-			break;
-		case UIEVENT_KEYDOWN:
-				lpszEventName = _T("键盘按下");
-			break;
-		case UIEVENT_KEYUP:
-				lpszEventName = _T("键盘弹起来");
-			break;
-		case UIEVENT_CHAR:
-				lpszEventName = _T("按下非系统字符");
-			break;
-		case UIEVENT_SYSKEY:
-				lpszEventName = _T("按下系统字符");
-			break;
-		case UIEVENT__KEYEND:
-				lpszEventName = _T("键盘事件结束");
-			break;
-		case UIEVENT__MOUSEBEGIN:
-				lpszEventName = _T("鼠标事件开始");
-			break;
-		case UIEVENT_MOUSEMOVE:
-				lpszEventName = _T("鼠标移动");
-			break;
-		case UIEVENT_MOUSELEAVE:
-				lpszEventName = _T("鼠标离开区域");
-			break;
-		case UIEVENT_MOUSEENTER:
-				lpszEventName = _T("鼠标进入区域");
-			break;
-		case UIEVENT_MOUSEHOVER:
-				lpszEventName = _T("鼠标悬浮区域");
-			break;
-		case UIEVENT_BUTTONDOWN:
-				lpszEventName = _T("鼠标左键按下");
-			break;
-		case UIEVENT_BUTTONUP:
-				lpszEventName = _T("鼠标左键弹起");
-			break;
-		case UIEVENT_RBUTTONDOWN:
-				lpszEventName = _T("鼠标右键按下");
-			break;
-		case UIEVENT_DBLCLICK:
-				lpszEventName = _T("鼠标双击");
-			break;
-		case UIEVENT_CONTEXTMENU:
-				lpszEventName = _T("菜单消息");
-			break;
-		case UIEVENT_SCROLLWHEEL:
-				lpszEventName = _T("滚动条消息");
-			break;
-		case UIEVENT__MOUSEEND:
-				lpszEventName = _T("鼠标消息结束");
-			break;
-		case UIEVENT_KILLFOCUS:
-				lpszEventName = _T("失去焦点");
-			break;
-		case UIEVENT_SETFOCUS:
-				lpszEventName = _T("获取焦点");
-			break;
-		case UIEVENT_WINDOWSIZE:
-				lpszEventName = _T("改变窗口大小");
-			break;
-		case UIEVENT_SETCURSOR:
-				lpszEventName = _T("修改鼠标指针");
-			break;
-		case UIEVENT_TIMER:
-				lpszEventName = _T("定时器");
-			break;
-		case UIEVENT_NOTIFY:
-				lpszEventName = _T("Notify消息");
-			break;
-		case UIEVENT_COMMAND:
-				lpszEventName = _T("Cmd消息");
-			break;
-		case UIEVENT__LAST:
-				lpszEventName = _T("消息结束");
-			break;
-		default:
-			lpszEventName = _T("unknown");
-	}
-	return lpszEventName;
-}
-#endif ///////////消息调试使用///////////////////
-
 CDuiString CControlUI::GetName() const
 {
     return m_sName;
@@ -729,22 +625,19 @@ void CControlUI::Invalidate()
 {
     if( !IsVisible() ) return;
 
-	RECT invalidateRc = m_rcItem;
+	RECT InvalidateRc = m_rcItem;
 
 	CControlUI* pParent = this;
 	RECT rcTemp;
 	RECT rcParent;
 	while( pParent = pParent->GetParent() )
 	{
-		rcTemp = invalidateRc;
+		rcTemp = InvalidateRc;
 		rcParent = pParent->GetPos();
-		if( !::IntersectRect(&invalidateRc, &rcTemp, &rcParent) ) 
-		{
-			return;
-		}
+		if( !::IntersectRect(&InvalidateRc, &rcTemp, &rcParent) ) return;
 	}
 
-	if( m_pManager != NULL && IsRectEmpty(&invalidateRc) == FALSE ) m_pManager->Invalidate(invalidateRc);
+	if (m_pManager != NULL) m_pManager->Invalidate(InvalidateRc);
 }
 
 bool CControlUI::IsUpdateNeeded() const

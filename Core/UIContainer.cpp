@@ -2,11 +2,7 @@
 
 namespace DuiLib
 {
-
 	/////////////////////////////////////////////////////////////////////////////////////
-	//
-	//
-
 	CContainerUI::CContainerUI()
 		: m_iChildPadding(0),
 		m_bAutoDestroy(true),
@@ -234,50 +230,46 @@ namespace DuiLib
 			return;
 		}
 
-		if( event.Type == UIEVENT_SETFOCUS ) 
-		{
+		if( event.Type == UIEVENT_SETFOCUS ) {
 			m_bFocused = true;
 			return;
-		}
-		if( event.Type == UIEVENT_KILLFOCUS ) 
-		{
+		}else if( event.Type == UIEVENT_KILLFOCUS ){
 			m_bFocused = false;
 			return;
 		}
-		if( m_pVerticalScrollBar != NULL && m_pVerticalScrollBar->IsVisible() && m_pVerticalScrollBar->IsEnabled() )
+
+		if( m_pVerticalScrollBar != NULL && m_pVerticalScrollBar->IsVisible() && m_pVerticalScrollBar->IsEnabled())
 		{
-			if( event.Type == UIEVENT_KEYDOWN ) 
-			{
+			if( event.Type == UIEVENT_KEYDOWN ) {
 				switch( event.chKey ) {
-			case VK_DOWN:
-				LineDown();
-				return;
-			case VK_UP:
-				LineUp();
-				return;
-			case VK_NEXT:
-				PageDown();
-				return;
-			case VK_PRIOR:
-				PageUp();
-				return;
-			case VK_HOME:
-				HomeUp();
-				return;
-			case VK_END:
-				EndDown();
-				return;
+					case VK_DOWN:
+							LineDown();
+						return;
+					case VK_UP:
+							LineUp();
+						return;
+					case VK_NEXT:
+							PageDown();
+						return;
+					case VK_PRIOR:
+							PageUp();
+						return;
+					case VK_HOME:
+							HomeUp();
+						return;
+					case VK_END:
+							EndDown();
+						return;
 				}
 			}
-			else if( event.Type == UIEVENT_SCROLLWHEEL )
-			{
+			else if( event.Type == UIEVENT_SCROLLWHEEL ){
 				switch( LOWORD(event.wParam) ) {
-			case SB_LINEUP:
-				LineUp();
-				return;
-			case SB_LINEDOWN:
-				LineDown();
-				return;
+					case SB_LINEUP:
+							LineUp();
+						return;
+					case SB_LINEDOWN:
+							LineDown();
+						return;
 				}
 			}
 		}

@@ -16,11 +16,6 @@ public:
     CControlUI();
     virtual ~CControlUI();
 
-///////////消息调试使用///////////////////
-#ifdef _DEBUG
-	void OutputDebugEventString(TEventUI& event);
-	CDuiString GetEventName(int Type);
-#endif///////////消息调试使用///////////////////
 public:
     virtual CDuiString GetName() const;
     virtual void SetName(LPCTSTR pstrName);

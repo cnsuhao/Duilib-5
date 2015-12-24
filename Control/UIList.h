@@ -41,6 +41,7 @@ typedef struct tagTListInfoUI
     DWORD dwLineColor;
     bool bShowHtml;
     bool bMultiExpandable;
+	bool bShowRowLine;
 	bool bShowColumnLine;//added by gechunping on 2014-5-1 for show columLine
 } TListInfoUI;
 
@@ -147,7 +148,8 @@ public:
     void SetDisabledItemBkColor(DWORD dwBkColor);
     void SetDisabledItemImage(LPCTSTR pStrImage);
     void SetItemLineColor(DWORD dwLineColor);
-	void SetItemColLine(bool bColLine = true);
+	void SetItemShowRowLine(bool bShowLine);
+	void SetItemShowColumnLine(bool bShowLine);
     bool IsItemShowHtml();
     void SetItemShowHtml(bool bShowHtml = true);
 	RECT GetItemTextPadding() const;

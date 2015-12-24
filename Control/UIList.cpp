@@ -26,10 +26,11 @@ CListUI::CListUI() : m_pCallback(NULL), m_bScrollSelect(false), m_iCurSel(-1), m
     m_ListInfo.dwHotBkColor = 0xFFE9F5FF;
     m_ListInfo.dwDisabledTextColor = 0xFFCCCCCC;
     m_ListInfo.dwDisabledBkColor = 0xFFFFFFFF;
-    m_ListInfo.dwLineColor = 0;
+    m_ListInfo.dwLineColor = 0xFF939393;
+	m_ListInfo.bShowRowLine = false;
+	m_ListInfo.bShowColumnLine = false;
     m_ListInfo.bShowHtml = false;
     m_ListInfo.bMultiExpandable = false;
-	m_ListInfo.bShowColumnLine=false;
     ::ZeroMemory(&m_ListInfo.rcTextPadding, sizeof(m_ListInfo.rcTextPadding));
     ::ZeroMemory(&m_ListInfo.rcColumn, sizeof(m_ListInfo.rcColumn));
 }
@@ -273,32 +274,31 @@ void CListUI::DoEvent(TEventUI& event)
         m_bFocused = false;
         return;
     }
-
     switch( event.Type ) {
-    case UIEVENT_KEYDOWN:
-        switch( event.chKey ) {
-        case VK_UP:
-            SelectItem(FindSelectable(m_iCurSel - 1, false), true);
-            return;
-        case VK_DOWN:
-            SelectItem(FindSelectable(m_iCurSel + 1, true), true);
-            return;
-        case VK_PRIOR:
-            PageUp();
-            return;
-        case VK_NEXT:
-            PageDown();
-            return;
-        case VK_HOME:
-            SelectItem(FindSelectable(0, false), true);
-            return;
-        case VK_END:
-            SelectItem(FindSelectable(GetCount() - 1, true), true);
-            return;
-        case VK_RETURN:
-            if( m_iCurSel != -1 ) GetItemAt(m_iCurSel)->Activate();
-            return;
-            }
+		case UIEVENT_KEYDOWN:
+			switch( event.chKey ) {
+			case VK_UP:
+				SelectItem(FindSelectable(m_iCurSel - 1, false), true);
+				return;
+			case VK_DOWN:
+				SelectItem(FindSelectable(m_iCurSel + 1, true), true);
+				return;
+			case VK_PRIOR:
+				PageUp();
+				return;
+			case VK_NEXT:
+				PageDown();
+				return;
+			case VK_HOME:
+				SelectItem(FindSelectable(0, false), true);
+				return;
+			case VK_END:
+				SelectItem(FindSelectable(GetCount() - 1, true), true);
+				return;
+			case VK_RETURN:
+				if( m_iCurSel != -1 ) GetItemAt(m_iCurSel)->Activate();
+				return;
+          }
         break;
     case UIEVENT_SCROLLWHEEL:
         {
@@ -572,9 +572,15 @@ void CListUI::SetItemLineColor(DWORD dwLineColor)
     Invalidate();
 }
 
-void CListUI::SetItemColLine(bool bColLine /*= true*/)
+void CListUI::SetItemShowRowLine(bool bShowLine)
 {
-	m_ListInfo.bShowColumnLine = bColLine;
+	m_ListInfo.bShowRowLine = bShowLine;
+	Invalidate();
+}
+
+void CListUI::SetItemShowColumnLine(bool bShowLine)
+{
+	m_ListInfo.bShowColumnLine = bShowLine;
 	Invalidate();
 }
 
@@ -682,7 +688,7 @@ void CListUI::SetAttribute(LPCTSTR pstrName, LPCTSTR pstrValue)
         if( _tcscmp(pstrValue, _T("true")) == 0 ) m_ListInfo.uTextStyle |= DT_END_ELLIPSIS;
         else m_ListInfo.uTextStyle &= ~DT_END_ELLIPSIS;
     }    
-    if( _tcscmp(pstrName, _T("itemtextpadding")) == 0 ) {
+    else if( _tcscmp(pstrName, _T("itemtextpadding")) == 0 ) {
         RECT rcTextPadding = { 0 };
         LPTSTR pstr = NULL;
         rcTextPadding.left = _tcstol(pstrValue, &pstr, 10);  ASSERT(pstr);    
@@ -750,7 +756,8 @@ void CListUI::SetAttribute(LPCTSTR pstrName, LPCTSTR pstrValue)
         DWORD clrColor = _tcstoul(pstrValue, &pstr, 16);
         SetItemLineColor(clrColor);
     }
-	else if( _tcscmp(pstrName,_T("itemcolline")) == 0)	SetItemColLine(_tcscmp(pstrValue,_T("true")) == 0);
+	else if( _tcsicmp(pstrName, _T("itemrowline")) == 0 ) SetItemShowRowLine(_tcsicmp(pstrValue, _T("true")) == 0);
+	else if( _tcscmp(pstrName,_T("itemcolumnline")) == 0)	SetItemShowColumnLine(_tcscmp(pstrValue,_T("true")) == 0);
     else if( _tcscmp(pstrName, _T("itemshowhtml")) == 0 ) SetItemShowHtml(_tcscmp(pstrValue, _T("true")) == 0);
     else CVerticalLayoutUI::SetAttribute(pstrName, pstrValue);
 }
@@ -1127,7 +1134,8 @@ void CListBodyUI::DoEvent(TEventUI& event)
         return;
     }
 
-    if( m_pOwner != NULL ) m_pOwner->DoEvent(event); else CControlUI::DoEvent(event);
+	if( m_pOwner != NULL ) 
+		m_pOwner->DoEvent(event); else CControlUI::DoEvent(event);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -1737,7 +1745,7 @@ void CListElementUI::DrawItemBk(HDC hDC, const RECT& rcItem)
     if( m_pOwner == NULL ) return;
     TListInfoUI* pInfo = m_pOwner->GetListInfo();
     DWORD iBackColor = 0;
-    if( !pInfo->bAlternateBk || m_iIndex % 2 == 0 ) iBackColor = pInfo->dwBkColor;
+    if( pInfo->bAlternateBk && m_iIndex % 2 != 0 ) iBackColor = pInfo->dwBkColor;
 
     if( !IsEnabled() ) {
         if( !pInfo->sDisabledImage.IsEmpty() ) {
@@ -1759,7 +1767,7 @@ void CListElementUI::DrawItemBk(HDC hDC, const RECT& rcItem)
 			CRenderEngine::DrawColor(hDC, m_rcItem, GetAdjustColor(pInfo->dwHotBkColor));
 	}else{
 		if( !m_sBkImage.IsEmpty() ) {
-			if ( pInfo->bAlternateBk && m_iIndex % 2 == 0 ) {
+			if ( pInfo->bAlternateBk && m_iIndex % 2 != 0 ) {
 				if( !DrawImage(hDC, (LPCTSTR)m_sBkImage) ) m_sBkImage.Empty();
 			}
 		}
@@ -1768,18 +1776,18 @@ void CListElementUI::DrawItemBk(HDC hDC, const RECT& rcItem)
 			else if (iBackColor != 0)
 				CRenderEngine::DrawColor(hDC, m_rcItem, GetAdjustColor(iBackColor));			   
 		}
-		else if (pInfo->bAlternateBk && m_iIndex %2 == 0){
+		else if (pInfo->bAlternateBk && m_iIndex %2 != 0){
 			CRenderEngine::DrawColor(hDC, m_rcItem, GetAdjustColor(iBackColor));			 
 		}
 	}
 
     if ( pInfo->dwLineColor != 0 ) {
-        RECT rcLine = { m_rcItem.left, m_rcItem.bottom - 1, m_rcItem.right, m_rcItem.bottom - 1 };
-        CRenderEngine::DrawLine(hDC, rcLine, 1, GetAdjustColor(pInfo->dwLineColor));
-		if(pInfo->bShowColumnLine)
-		{
-			for( int i = 0; i < pInfo->nColumns; i++ )
-			{
+		if(pInfo->bShowRowLine) {
+			RECT rcLine = { m_rcItem.left, m_rcItem.bottom - 1, m_rcItem.right, m_rcItem.bottom - 1 };
+			CRenderEngine::DrawLine(hDC, rcLine, 1, GetAdjustColor(pInfo->dwLineColor));
+		}
+		if(pInfo->bShowColumnLine){
+			for( int i = 0; i < pInfo->nColumns; i++ )	{
 				RECT rcLine = { pInfo->rcColumn[i].right-1, m_rcItem.top, pInfo->rcColumn[i].right-1, m_rcItem.bottom };
 				CRenderEngine::DrawLine(hDC, rcLine, 1, GetAdjustColor(pInfo->dwLineColor));
 			}
@@ -1817,7 +1825,6 @@ void CListLabelElementUI::DoEvent(TEventUI& event)
     if( event.Type == UIEVENT_BUTTONDOWN || event.Type == UIEVENT_RBUTTONDOWN )
     {
         if( IsEnabled() ) {
-            m_pManager->SendNotify(this, DUI_MSGTYPE_ITEMCLICK);
             Select();
             Invalidate();
         }
@@ -1825,10 +1832,13 @@ void CListLabelElementUI::DoEvent(TEventUI& event)
     }
     if( event.Type == UIEVENT_MOUSEMOVE ) 
     {
-        return;
+
+	     return;
     }
     if( event.Type == UIEVENT_BUTTONUP )
     {
+		if (IsEnabled())
+	    	m_pManager->SendNotify(this, DUI_MSGTYPE_ITEMCLICK);
         return;
     }
     if( event.Type == UIEVENT_MOUSEENTER )
@@ -1967,11 +1977,10 @@ void CListTextElementUI::SetText(int iIndex, LPCTSTR pstrText)
     CDuiString* pText = static_cast<CDuiString*>(m_aTexts[iIndex]);
     if( (pText == NULL && pstrText == NULL) || (pText && *pText == pstrText) ) return;
 
-	if ( pText ) //by cddjr 2011/10/20
-		pText->Assign(pstrText);
-	else
-		m_aTexts.SetAt(iIndex, new CDuiString(pstrText));
-    Invalidate();
+	if ( pText ) {delete pText; pText = NULL;}
+	m_aTexts.SetAt(iIndex, new CDuiString(pstrText));
+    
+	Invalidate();
 }
 
 void CListTextElementUI::SetOwner(CControlUI* pOwner)
@@ -2020,10 +2029,10 @@ void CListTextElementUI::DoEvent(TEventUI& event)
             }
         }
 
-        //if(m_nHoverLink != nHoverLink) {
+        if(m_nHoverLink != nHoverLink) {
             Invalidate();
             m_nHoverLink = nHoverLink;
-        //}
+        }
     }
     if( m_nLinks > 0 && event.Type == UIEVENT_MOUSELEAVE ) {
         if(m_nHoverLink != -1) {
@@ -2064,8 +2073,6 @@ void CListTextElementUI::DrawItemText(HDC hDC, const RECT& rcItem)
         iTextColor = pInfo->dwDisabledTextColor;
     }
     IListCallbackUI* pCallback = m_pOwner->GetTextCallback();
-    //ASSERT(pCallback);
-    //if( pCallback == NULL ) return;
 
     m_nLinks = 0;
     int nLinks = lengthof(m_rcLinks);
@@ -2271,7 +2278,6 @@ void CListContainerElementUI::DoEvent(TEventUI& event)
     if( event.Type == UIEVENT_BUTTONDOWN || event.Type == UIEVENT_RBUTTONDOWN )
     {
         if( IsEnabled() ){
-            m_pManager->SendNotify(this, DUI_MSGTYPE_ITEMCLICK);
             Select();
             Invalidate();
         }
@@ -2279,8 +2285,10 @@ void CListContainerElementUI::DoEvent(TEventUI& event)
     }
     if( event.Type == UIEVENT_BUTTONUP ) 
     {
+		if (IsEnabled())
+			m_pManager->SendNotify(this, DUI_MSGTYPE_ITEMCLICK);
         return;
-    }
+   }
     if( event.Type == UIEVENT_MOUSEMOVE )
     {
         return;
@@ -2301,7 +2309,18 @@ void CListContainerElementUI::DoEvent(TEventUI& event)
         }
         return;
     }
-
+	if( event.Type == UIEVENT_TIMER )
+ 	{
+ 		m_pManager->SendNotify(this, DUI_MSGTYPE_TIMER, event.wParam, event.lParam);
+ 		return;
+ 	}
+ 	if( event.Type == UIEVENT_CONTEXTMENU )
+ 	{
+ 		if( IsContextMenuUsed() ) {
+ 			m_pManager->SendNotify(this, DUI_MSGTYPE_MENU, event.wParam, event.lParam);
+ 			return;
+ 		}
+ 	}
     // An important twist: The list-item will send the event not to its immediate
     // parent but to the "attached" list. A list may actually embed several components
     // in its path to the item, but key-presses etc. needs to go to the actual list.
@@ -2332,7 +2351,7 @@ void CListContainerElementUI::DrawItemBk(HDC hDC, const RECT& rcItem)
     if( m_pOwner == NULL ) return;
     TListInfoUI* pInfo = m_pOwner->GetListInfo();
     DWORD iBackColor = 0;
-    if( !pInfo->bAlternateBk || m_iIndex % 2 == 0 ) iBackColor = pInfo->dwBkColor;
+    if( pInfo->bAlternateBk && m_iIndex % 2 != 0 ) iBackColor = pInfo->dwBkColor;
 
     if( (m_uButtonState & UISTATE_HOT) != 0 ) {
         iBackColor = pInfo->dwHotBkColor;
@@ -2379,8 +2398,11 @@ void CListContainerElementUI::DrawItemBk(HDC hDC, const RECT& rcItem)
     }
 
     if ( pInfo->dwLineColor != 0 ) {
-        RECT rcLine = { m_rcItem.left, m_rcItem.bottom - 1, m_rcItem.right, m_rcItem.bottom - 1 };
-        CRenderEngine::DrawLine(hDC, rcLine, 1, GetAdjustColor(pInfo->dwLineColor));
+		if (pInfo->bShowRowLine)
+		{
+			RECT rcLine = { m_rcItem.left, m_rcItem.bottom - 1, m_rcItem.right, m_rcItem.bottom - 1 };
+			CRenderEngine::DrawLine(hDC, rcLine, 1, GetAdjustColor(pInfo->dwLineColor));
+		}
     }
 }
 

@@ -167,7 +167,8 @@ public:
 
 public:
     void Init(HWND hWnd);
-    void NeedUpdate();
+	bool IsNeedUpdate();
+    void NeedUpdate(bool bNeedUpdate = true);
     void Invalidate(RECT& rcItem);
 	void Invalidate();
 
