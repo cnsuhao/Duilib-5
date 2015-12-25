@@ -211,12 +211,21 @@ CControlUI* CDialogBuilder::Create(IDialogBuilderCallback* pCallback, CPaintMana
                         pManager->SetLayered(_tcscmp(pstrValue, _T("true")) == 0);
                     } 
 					else if ( _tcscmp(pstrName, _T("shadow")) == 0){
-						pManager->SetWindowShadow(_tcscmp(pstrValue, _T("true")) == 0);
+						pManager->SetShadow(_tcscmp(pstrValue, _T("true")) == 0);
 					}
 					else if (_tcscmp(pstrName, _T("shadowimage")) == 0){
 						pManager->SetShadowImage(pstrValue);
 					}
-                    else if( _tcscmp(pstrName, _T("disabledfontcolor")) == 0 ) {
+					else if (_tcscmp(pstrName,_T("shadowcorner")) == 0){
+						RECT rcCorner;
+						LPTSTR pstr = NULL;
+						rcCorner.left = _tcstol(pstrValue, &pstr, 10);  ASSERT(pstr);    
+						rcCorner.top = _tcstol(pstr + 1, &pstr, 10);    ASSERT(pstr);    
+						rcCorner.right = _tcstol(pstr + 1, &pstr, 10);  ASSERT(pstr);    
+						rcCorner.bottom = _tcstol(pstr + 1, &pstr, 10); ASSERT(pstr);
+						pManager->SetShadowCorner(rcCorner);
+					}
+					else if( _tcscmp(pstrName, _T("disabledfontcolor")) == 0 ) {
                         if( *pstrValue == _T('#')) pstrValue = ::CharNext(pstrValue);
                         LPTSTR pstr = NULL;
                         DWORD clrColor = _tcstoul(pstrValue, &pstr, 16);
@@ -253,7 +262,8 @@ CControlUI* CDialogBuilder::Create(IDialogBuilderCallback* pCallback, CPaintMana
             }
         }
     }
-    return _Parse(&root, pParent, pManager);
+
+	return _Parse(&root, pParent, pManager);
 }
 
 CMarkup* CDialogBuilder::GetMarkup()

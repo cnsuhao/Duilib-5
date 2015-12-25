@@ -195,9 +195,12 @@ public:
     void SetLayered(bool bTrans);
 	bool IsLayered();
 
-	void SetWindowShadow(bool bShadow);
-	bool IsWindowShadow();
+	void SetShadow(bool bShadow);
+	bool IsShadow();
+	void SetShadowCorner(RECT rcCorner);
 	void SetShadowImage(LPCTSTR lpszShadowImage);
+	void ShowShadow(HDC hPaint,RECT& rcPaint);
+	void CalRealRootRect();
 
     bool IsShowUpdateRect() const;
     void SetShowUpdateRect(bool show);
@@ -355,7 +358,6 @@ private:
 	int m_nOpacity;
     HDC m_hDcPaint;
     HDC m_hDcOffscreen;
-    HDC m_hDcBackground;
     HBITMAP m_hbmpOffscreen;
     HBITMAP m_hbmpBackground;
 	LPBYTE m_pBmpBackgroundBits;
@@ -385,6 +387,7 @@ private:
     bool m_bOffscreenPaint;
     bool m_bLayered;
 	bool m_bShadow;
+	RECT m_rcCorner;
 	CDuiString m_strShadowImage;
     bool m_bMouseTracking;
     bool m_bMouseCapture;

@@ -50,6 +50,26 @@ typedef struct tagTIMERINFO
     bool bKilled;
 } TIMERINFO;
 
+bool IsEqualRect(LPRECT lpPaint, LPRECT lpClient)
+{
+	bool bSuccess =  false;
+	do 
+	{
+		if (lpPaint->left != lpClient->left)
+			break;
+		if (lpPaint->top != lpClient->top)
+			break;
+		if (lpPaint->right != lpClient->right)
+			break;
+		if (lpPaint->bottom != lpPaint->bottom)
+			break;
+
+		bSuccess = true;
+	} while (false);
+
+	return bSuccess;	
+}
+
 /////////////////////////////////////////////////////////////////////////////////////
 
 HPEN m_hUpdateRectPen = NULL;
@@ -70,7 +90,6 @@ CPaintManagerUI::CPaintManagerUI() :
 m_hWndPaint(NULL),
 m_hDcPaint(NULL),
 m_hDcOffscreen(NULL),
-m_hDcBackground(NULL),
 m_hbmpOffscreen(NULL),
 m_hbmpBackground(NULL),
 m_hwndTooltip(NULL),
@@ -154,7 +173,6 @@ CPaintManagerUI::~CPaintManagerUI()
     // Reset other parts...
     if( m_hwndTooltip != NULL ) ::DestroyWindow(m_hwndTooltip);
     if( m_hDcOffscreen != NULL ) ::DeleteDC(m_hDcOffscreen);
-    if( m_hDcBackground != NULL ) ::DeleteDC(m_hDcBackground);
     if( m_hbmpOffscreen != NULL ) ::DeleteObject(m_hbmpOffscreen);
     if( m_hbmpBackground != NULL ) ::DeleteObject(m_hbmpBackground);
     if( m_hDcPaint != NULL ) ::ReleaseDC(m_hWndPaint, m_hDcPaint);
@@ -450,19 +468,52 @@ void CPaintManagerUI::SetTransparent(int nOpacity)
     fSetLayeredWindowAttributes(m_hWndPaint, 0, nOpacity, LWA_ALPHA);
 }
 
-void CPaintManagerUI::SetWindowShadow(bool bShadow)
+void CPaintManagerUI::SetShadow(bool bShadow)
 {
 	m_bShadow = bShadow;
 }
 
-bool CPaintManagerUI::IsWindowShadow()
+bool CPaintManagerUI::IsShadow()
 {
 	return m_bShadow;
+}
+
+void CPaintManagerUI::SetShadowCorner(RECT rcCorner)
+{
+	memcpy_s(&m_rcCorner,sizeof(RECT),&rcCorner,sizeof(RECT));
 }
 
 void CPaintManagerUI::SetShadowImage(LPCTSTR lpszShadowImage)
 {
 	m_strShadowImage	 = lpszShadowImage;
+}
+
+void CPaintManagerUI::ShowShadow(HDC hPaint,RECT& rcPaint)
+{	
+	if (IsZoomed(m_hWndPaint) != false)
+	{
+		RECT rcWnd;
+		GetWindowRect(m_hWndPaint,&rcWnd);
+		m_pRoot->SetPos(rcWnd);
+		return;
+	}
+	
+	TCHAR sRenderString[MAX_PATH];
+	_stprintf(sRenderString,_T("file='%s' corner='%u,%u,%u,%u'"),(LPCTSTR)m_strShadowImage,
+					m_rcCorner.left,m_rcCorner.top,m_rcCorner.right,m_rcCorner.bottom);
+	CRenderEngine::DrawImageString(hPaint,this,rcPaint,rcPaint,sRenderString);
+
+	CalRealRootRect();
+}
+
+void CPaintManagerUI::CalRealRootRect()
+{
+	RECT rcWnd;
+	GetWindowRect(m_hWndPaint,&rcWnd);
+	RECT rcPos = {m_rcCorner.left,m_rcCorner.top,rcWnd.right-rcWnd.left-m_rcCorner.right,rcWnd.bottom-rcWnd.top-m_rcCorner.bottom};
+	RECT rcRootPos = m_pRoot->GetPos();
+	if (IsEqualRect(&rcRootPos,&rcPos) == false)
+		m_pRoot->SetPos(rcPos);
 }
 
 bool CPaintManagerUI::IsLayered()
@@ -717,7 +768,17 @@ bool CPaintManagerUI::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, LR
 				int iSaveDC = ::SaveDC(m_hDcOffscreen);
 				
 				CRenderEngine::ClearAalphaPixel(m_pBmpOffscreenBits, dwWidth,&rcPaint);
-				m_pRoot->DoPaint(m_hDcOffscreen, rcPaint);
+				if (IsShadow())
+				{
+					RECT rcClipClient = {0};
+					memcpy(&rcClipClient, &rcPaint, sizeof(RECT));
+					ShowShadow(m_hDcOffscreen,rcClipClient);
+					m_pRoot->DoPaint(m_hDcOffscreen, rcClipClient);
+				}
+				else
+				{
+					m_pRoot->DoPaint(m_hDcOffscreen, rcPaint);
+				}
 				for( int i = 0; i < m_aPostPaintControls.GetSize(); i++ ) {
 					CControlUI* pPostPaintControl = static_cast<CControlUI*>(m_aPostPaintControls[i]);
 					pPostPaintControl->DoPostPaint(m_hDcOffscreen, rcPaint);
@@ -776,8 +837,6 @@ bool CPaintManagerUI::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, LR
             ::RestoreDC(hDC, save);
         }
         break;
-	case WM_SYSCOMMAND:
-		break;
     case WM_GETMINMAXINFO:
         {
             LPMINMAXINFO lpMMI = (LPMINMAXINFO) lParam;
@@ -1213,6 +1272,7 @@ bool CPaintManagerUI::AttachDialog(CControlUI* pControl)
     m_bUpdateNeeded = true;
     m_bFirstLayout = true;
     m_bFocusNeeded = true;
+
     // Initiate all control
     return InitControls(pControl);
 }

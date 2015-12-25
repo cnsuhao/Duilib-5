@@ -302,14 +302,12 @@ void CControlUI::SetPos(RECT rc)
     CControlUI* pParent = this;
     RECT rcTemp;
     RECT rcParent;
-    while( pParent = pParent->GetParent() )
+    while (pParent = pParent->GetParent())
     {
         rcTemp = InvalidateRc;
         rcParent = pParent->GetPos();
-        if( !::IntersectRect(&InvalidateRc, &rcTemp, &rcParent) ) 
-        {
+        if (!::IntersectRect(&InvalidateRc, &rcTemp, &rcParent)) 
             return;
-        }
     }
     m_pManager->Invalidate(InvalidateRc);
 }
