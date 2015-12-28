@@ -79,9 +79,7 @@ LRESULT WindowImplBase::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM /*lParam
 
 LRESULT WindowImplBase::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 {
-	/*bHandled = FALSE;*/
-	//Modified to Close By BaseClass
-	PostQuitMessage(0);
+	bHandled = FALSE;
 	return 0;
 }
 

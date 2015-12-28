@@ -756,26 +756,14 @@ namespace DuiLib
 				else
 				{
 					SetChecked(!GetChecked());
-				
-					MenuCmd* pMenuCmd = new MenuCmd();
-					lstrcpy(pMenuCmd->szName, GetName().GetData());
-					lstrcpy(pMenuCmd->szUserData, GetUserData().GetData());
-					lstrcpy(pMenuCmd->szText, GetText().GetData());
-					pMenuCmd->bChecked = GetChecked();
-
 					ContextMenuParam param;
 					param.hWnd = m_pManager->GetPaintWindow();
 					param.wParam = 1;
-					CMenuWnd::GetGlobalContextMenuObserver().RBroadcast(param);
+					MenuObserverImpl& MenuImpl = CMenuWnd::GetGlobalContextMenuObserver();
+					MenuImpl.RBroadcast(param);
 
-					if (CMenuWnd::GetGlobalContextMenuObserver().GetManager() != NULL)
-					{
-						if (!PostMessage(CMenuWnd::GetGlobalContextMenuObserver().GetManager()->GetPaintWindow(), WM_MENUCLICK, (WPARAM)pMenuCmd, NULL))
-						{
-							delete pMenuCmd;
-							pMenuCmd = NULL;
-						}
-					}
+					if (MenuImpl.GetManager() != NULL)
+						PostMessage(MenuImpl.GetManager()->GetPaintWindow(), WM_MENUCLICK, NULL, (LPARAM)this);
 				}
 			}
    			return;
@@ -878,27 +866,25 @@ namespace DuiLib
 	{
 		if (!m_bCheckItem || CMenuWnd::GetGlobalContextMenuObserver().GetMenuCheckInfo() == NULL )
 			return;
+
 		std::map<CDuiString,bool>::iterator it = CMenuWnd::GetGlobalContextMenuObserver().GetMenuCheckInfo()->find(GetName());
 		if (it == CMenuWnd::GetGlobalContextMenuObserver().GetMenuCheckInfo()->end())
 			CMenuWnd::GetGlobalContextMenuObserver().GetMenuCheckInfo()->insert(std::map<CDuiString,bool>::value_type(GetName(),bCheck));
 		else
 			it->second = bCheck;
-
 	}
 
 	bool CMenuElementUI::GetChecked() const
 	{
-
-		if (!m_bCheckItem || CMenuWnd::GetGlobalContextMenuObserver().GetMenuCheckInfo() == NULL || CMenuWnd::GetGlobalContextMenuObserver().GetMenuCheckInfo()->size() == 0)
+		if (!m_bCheckItem || CMenuWnd::GetGlobalContextMenuObserver().GetMenuCheckInfo() == NULL || 
+					CMenuWnd::GetGlobalContextMenuObserver().GetMenuCheckInfo()->size() == 0)
 			return false;
 
 		std::map<CDuiString,bool>::iterator it = CMenuWnd::GetGlobalContextMenuObserver().GetMenuCheckInfo()->find(GetName());
 		if (it != CMenuWnd::GetGlobalContextMenuObserver().GetMenuCheckInfo()->end())
-		{
 			return it->second;
-		}
-		return false;
 
+		return false;
 	}
 
 	void CMenuElementUI::SetCheckItem(bool bCheckItem/* = false*/)

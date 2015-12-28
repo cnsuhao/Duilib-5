@@ -113,7 +113,8 @@ m_pParentResourcePM(NULL),
 m_pBmpBackgroundBits(NULL),
 m_bMaxSizeBox(true),
 m_bEnableDrop(false),
-m_pBmpOffscreenBits(NULL)
+m_pBmpOffscreenBits(NULL),
+m_bShadow(false)
 {
     m_dwDefaultDisabledColor = 0xFFA7A6AA;
     m_dwDefaultFontColor = 0xFF000000;
@@ -490,10 +491,10 @@ void CPaintManagerUI::SetShadowImage(LPCTSTR lpszShadowImage)
 
 void CPaintManagerUI::ShowShadow(HDC hPaint,RECT& rcPaint)
 {	
+	RECT rcWnd;
+	GetWindowRect(m_hWndPaint,&rcWnd);
 	if (IsZoomed(m_hWndPaint) != false)
 	{
-		RECT rcWnd;
-		GetWindowRect(m_hWndPaint,&rcWnd);
 		m_pRoot->SetPos(rcWnd);
 		return;
 	}
@@ -503,14 +504,13 @@ void CPaintManagerUI::ShowShadow(HDC hPaint,RECT& rcPaint)
 					m_rcCorner.left,m_rcCorner.top,m_rcCorner.right,m_rcCorner.bottom);
 	CRenderEngine::DrawImageString(hPaint,this,rcPaint,rcPaint,sRenderString);
 
-	CalRealRootRect();
+	RECT rcPos = {m_rcCorner.left,m_rcCorner.top,rcWnd.right-rcWnd.left-m_rcCorner.right,
+							rcWnd.bottom-rcWnd.top-m_rcCorner.bottom};
+	CalRealRootRect(rcPos);
 }
 
-void CPaintManagerUI::CalRealRootRect()
+void CPaintManagerUI::CalRealRootRect(RECT& rcPos)
 {
-	RECT rcWnd;
-	GetWindowRect(m_hWndPaint,&rcWnd);
-	RECT rcPos = {m_rcCorner.left,m_rcCorner.top,rcWnd.right-rcWnd.left-m_rcCorner.right,rcWnd.bottom-rcWnd.top-m_rcCorner.bottom};
 	RECT rcRootPos = m_pRoot->GetPos();
 	if (IsEqualRect(&rcRootPos,&rcPos) == false)
 		m_pRoot->SetPos(rcPos);

@@ -200,7 +200,7 @@ public:
 	void SetShadowCorner(RECT rcCorner);
 	void SetShadowImage(LPCTSTR lpszShadowImage);
 	void ShowShadow(HDC hPaint,RECT& rcPaint);
-	void CalRealRootRect();
+	void CalRealRootRect(RECT& rcPos);
 
     bool IsShowUpdateRect() const;
     void SetShowUpdateRect(bool show);
