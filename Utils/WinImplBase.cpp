@@ -24,12 +24,10 @@ void WindowImplBase::OnFinalMessage( HWND hWnd )
 LRESULT WindowImplBase::ResponseDefaultKeyEvent(WPARAM wParam)
 {
 	if (wParam == VK_RETURN)
-	{
 		return FALSE;
-	}
 	else if (wParam == VK_ESCAPE)
 	{
-		Close();
+		PostQuitMessage(0);
 		return TRUE;
 	}
 

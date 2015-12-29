@@ -70,6 +70,21 @@ bool IsEqualRect(LPRECT lpPaint, LPRECT lpClient)
 	return bSuccess;	
 }
 
+bool IsRectNull(LPRECT lpRect)
+{
+	bool bSuccess =  true;
+	do 
+	{
+		if (lpRect->left == 0 || lpRect->top == 0 ||
+			lpRect->right == 0 || lpRect->bottom == 0 )
+			break;
+
+		bSuccess = false;
+	} while (false);
+
+	return bSuccess;	
+}
+
 /////////////////////////////////////////////////////////////////////////////////////
 
 HPEN m_hUpdateRectPen = NULL;
@@ -491,22 +506,34 @@ void CPaintManagerUI::SetShadowImage(LPCTSTR lpszShadowImage)
 
 void CPaintManagerUI::ShowShadow(HDC hPaint,RECT& rcPaint)
 {	
+	if (m_strShadowImage.IsEmpty())
+		return;
+
 	RECT rcWnd;
 	GetWindowRect(m_hWndPaint,&rcWnd);
 	if (IsZoomed(m_hWndPaint) != false)
 	{
-		m_pRoot->SetPos(rcWnd);
+		CalRealRootRect(rcWnd);
 		return;
 	}
 	
-	TCHAR sRenderString[MAX_PATH];
-	_stprintf(sRenderString,_T("file='%s' corner='%u,%u,%u,%u'"),(LPCTSTR)m_strShadowImage,
-					m_rcCorner.left,m_rcCorner.top,m_rcCorner.right,m_rcCorner.bottom);
-	CRenderEngine::DrawImageString(hPaint,this,rcPaint,rcPaint,sRenderString);
-
 	RECT rcPos = {m_rcCorner.left,m_rcCorner.top,rcWnd.right-rcWnd.left-m_rcCorner.right,
-							rcWnd.bottom-rcWnd.top-m_rcCorner.bottom};
+		rcWnd.bottom-rcWnd.top-m_rcCorner.bottom};
+
 	CalRealRootRect(rcPos);
+
+	RECT rcItem = {0,0,rcWnd.right-rcWnd.left,rcWnd.bottom-rcWnd.top};
+
+	if (IsEqualRect(&rcPaint,&rcItem) == false)
+		return;
+
+	TCHAR sRenderString[MAX_PATH];
+	if (IsRectNull(&m_rcCorner))
+		_stprintf(sRenderString,_T("file='%s' hole='false'"),(LPCTSTR)m_strShadowImage);
+	else
+		_stprintf(sRenderString,_T("file='%s' corner='%u,%u,%u,%u' hole='false'"),(LPCTSTR)m_strShadowImage,
+						m_rcCorner.left,m_rcCorner.top,m_rcCorner.right,m_rcCorner.bottom);
+	CRenderEngine::DrawImageString(hPaint,this,rcItem,rcPaint,sRenderString);
 }
 
 void CPaintManagerUI::CalRealRootRect(RECT& rcPos)
