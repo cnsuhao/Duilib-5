@@ -60,6 +60,7 @@ union DuiMessageMapFunctions
 #define DUI_MSGTYPE_ITEMSELECT 		   	   (_T("itemselect"))
 #define DUI_MSGTYPE_ITEMEXPAND             (_T("itemexpand"))
 #define DUI_MSGTYPE_WINDOWINIT             (_T("windowinit"))
+#define DUI_MSGTYPE_WINDOWSIZE				(_T("windowsize"))
 #define DUI_MSGTYPE_BUTTONDOWN 		   	   (_T("buttondown"))
 #define DUI_MSGTYPE_MOUSEENTER			   (_T("mouseenter"))
 #define DUI_MSGTYPE_MOUSELEAVE			   (_T("mouseleave"))

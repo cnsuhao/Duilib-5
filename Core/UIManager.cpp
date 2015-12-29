@@ -750,9 +750,9 @@ bool CPaintManagerUI::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, LR
 				::ZeroMemory(&m_rcLayeredUpdate, sizeof(m_rcLayeredUpdate));
 			}
 
-			if( IsNeedUpdate() ) {
-				NeedUpdate(false);
-				if( !::IsRectEmpty(&rcClient) ) {
+			if( m_bUpdateNeeded ) {
+				m_bUpdateNeeded = false;
+				if( !::IsRectEmpty(&rcClient) && !::IsIconic(m_hWndPaint) ) {
 					if( m_pRoot->IsUpdateNeeded() ) {
 						if( m_hDcOffscreen != NULL ) ::DeleteDC(m_hDcOffscreen);
 						if( m_hbmpOffscreen != NULL ) ::DeleteObject(m_hbmpOffscreen);
@@ -795,17 +795,16 @@ bool CPaintManagerUI::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, LR
 				int iSaveDC = ::SaveDC(m_hDcOffscreen);
 				
 				CRenderEngine::ClearAalphaPixel(m_pBmpOffscreenBits, dwWidth,&rcPaint);
+
+				RECT rcClipClient = {0};
+				memcpy(&rcClipClient, &rcPaint, sizeof(RECT));
+
+				//按需要绘制界面阴影
 				if (IsShadow())
-				{
-					RECT rcClipClient = {0};
-					memcpy(&rcClipClient, &rcPaint, sizeof(RECT));
 					ShowShadow(m_hDcOffscreen,rcClipClient);
-					m_pRoot->DoPaint(m_hDcOffscreen, rcClipClient);
-				}
-				else
-				{
-					m_pRoot->DoPaint(m_hDcOffscreen, rcPaint);
-				}
+
+				m_pRoot->DoPaint(m_hDcOffscreen, rcClipClient);
+
 				for( int i = 0; i < m_aPostPaintControls.GetSize(); i++ ) {
 					CControlUI* pPostPaintControl = static_cast<CControlUI*>(m_aPostPaintControls[i]);
 					pPostPaintControl->DoPostPaint(m_hDcOffscreen, rcPaint);
@@ -883,8 +882,8 @@ bool CPaintManagerUI::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, LR
                 m_pFocus->Event(event);
             }
             if( m_pRoot != NULL ) m_pRoot->NeedUpdate();
-			if (IsNeedUpdate())
-				Invalidate();
+			// 立即重绘窗口
+			::RedrawWindow(m_hWndPaint, NULL, NULL, RDW_INVALIDATE);
         }
         return true;
     case WM_TIMER:
@@ -1250,14 +1249,9 @@ bool CPaintManagerUI::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, LR
     return false;
 }
 
-bool CPaintManagerUI::IsNeedUpdate()
+void CPaintManagerUI::NeedUpdate()
 {
-	return m_bUpdateNeeded;
-}
-
-void CPaintManagerUI::NeedUpdate(bool bNeedUpdate /*= true*/ )
-{
-    m_bUpdateNeeded = bNeedUpdate;
+	m_bUpdateNeeded = true;
 }
 
 void CPaintManagerUI::Invalidate()
