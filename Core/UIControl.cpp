@@ -26,6 +26,7 @@ m_bColorHSL(false),
 m_nBorderSize(0),
 m_nBorderStyle(PS_SOLID),
 m_nTooltipWidth(300),
+m_bDragEnabled(false),
 m_dwCaretColor(0xFF000000)
 {
     m_cXY.cx = m_cXY.cy = 0;
@@ -894,6 +895,7 @@ void CControlUI::SetAttribute(LPCTSTR pstrName, LPCTSTR pstrValue)
     else if( _tcscmp(pstrName, _T("menu")) == 0 ) SetContextMenuUsed(_tcscmp(pstrValue, _T("true")) == 0);
 	else if( _tcscmp(pstrName, _T("virtualwnd")) == 0 ) SetVirtualWnd(pstrValue);
 	else if( _tcscmp(pstrName, _T("style")) == 0) SetStyle(pstrValue);
+	else if( _tcscmp(pstrName, _T("droptarget")) == 0 ) SetDropEnabled(_tcscmp(pstrValue, _T("true")) == 0);
 }
 
 CControlUI* CControlUI::ApplyAttributeList(LPCTSTR pstrList)
@@ -1211,4 +1213,60 @@ void CControlUI::SetRoundSelect(RECT rcRoundSelect)
 	m_rcRoundSelect=rcRoundSelect;
 }
 
+void CControlUI::SetDropEnabled(bool bEnable)
+{
+	m_bDragEnabled = bEnable;
+}
+
+bool CControlUI::IsDropEnabled()
+{
+	return m_bDragEnabled;
+}
+
+void  CControlUI::OnDragEnter( IDataObject *pDataObj, DWORD grfKeyState, POINT pt,  DWORD *pdwEffect)
+{
+	if (IsDropEnabled())
+	{
+		*pdwEffect = DROPEFFECT_COPY;
+
+	}else
+	{
+		*pdwEffect = DROPEFFECT_NONE;
+		if( m_pParent != NULL )m_pParent->OnDragEnter(pDataObj,grfKeyState,pt,pdwEffect);
+	}
+}
+
+void  CControlUI::OnDragOver(DWORD grfKeyState, POINT pt,DWORD *pdwEffect)
+{
+	if (IsDropEnabled())
+	{
+		*pdwEffect = DROPEFFECT_COPY;
+
+	}else
+	{
+		*pdwEffect = DROPEFFECT_NONE;
+		if( m_pParent != NULL )m_pParent->OnDragOver(grfKeyState,pt,pdwEffect);
+	}
+}
+
+void  CControlUI::OnDragLeave()
+{
+	if (IsDropEnabled())
+		//OnDragLeave();
+		return;
+	else if( m_pParent != NULL ) m_pParent->OnDragLeave();
+}
+
+void  CControlUI::OnDrop(IDataObject *pDataObj, DWORD grfKeyState, POINT pt, DWORD *pdwEffect)
+{
+	if (IsDropEnabled())
+	{
+		*pdwEffect = DROPEFFECT_COPY;
+
+	}else
+	{
+		*pdwEffect = DROPEFFECT_NONE;
+		if( m_pParent != NULL )m_pParent->OnDrop(pDataObj,grfKeyState,pt,pdwEffect);
+	}
+}
 } // namespace DuiLib

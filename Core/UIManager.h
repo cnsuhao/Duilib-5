@@ -159,7 +159,7 @@ public:
 typedef CControlUI* (*LPCREATECONTROL)(LPCTSTR pstrType);
 
 
-class UILIB_API CPaintManagerUI
+class UILIB_API CPaintManagerUI : public IDuiDropTarget
 {
 public:
     CPaintManagerUI();
@@ -324,6 +324,12 @@ public:
 	bool RemoveTranslateAccelerator(ITranslateAccelerator *pTranslateAccelerator);
 	bool TranslateAccelerator(LPMSG pMsg);
 
+	//拖拽相关
+	HRESULT OnDragEnter( IDataObject *pDataObj, DWORD grfKeyState, POINTL ptl,  DWORD *pdwEffect);
+	HRESULT  OnDragOver(DWORD grfKeyState, POINTL ptl,DWORD *pdwEffect);
+	HRESULT  OnDragLeave();
+	HRESULT  OnDrop(__RPC__in_opt IDataObject *pDataObj, DWORD grfKeyState, POINTL ptl, __RPC__inout DWORD *pdwEffect);
+
     CControlUI* GetRoot() const;
     CControlUI* FindControl(POINT pt) const;
     CControlUI* FindControl(LPCTSTR pstrName) const;
@@ -394,6 +400,10 @@ private:
 	LPBYTE	m_pBmpOffscreenBits;
 	RECT	m_rcLayeredUpdate;
     //
+	//当前DtopTarget控件
+	CControlUI* m_pEventDrop;
+	IDataObject* m_pDataObject;
+
     CStdPtrArray m_aNotifiers;
     CStdPtrArray m_aTimers;
     CStdPtrArray m_aPreMessageFilters;

@@ -129,7 +129,9 @@ m_pBmpBackgroundBits(NULL),
 m_bMaxSizeBox(true),
 m_bEnableDrop(false),
 m_pBmpOffscreenBits(NULL),
-m_bShadow(false)
+m_bShadow(false),
+m_pEventDrop(NULL),
+m_pDataObject(NULL)
 {
     m_dwDefaultDisabledColor = 0xFFA7A6AA;
     m_dwDefaultFontColor = 0xFF000000;
@@ -2489,4 +2491,80 @@ void CPaintManagerUI::UsedVirtualWnd(bool bUsed)
 	m_bUsedVirtualWnd = bUsed;
 }
 
+HRESULT CPaintManagerUI::OnDragEnter( IDataObject *pDataObj, DWORD grfKeyState, POINTL ptl,  DWORD *pdwEffect)
+{
+	m_pDataObject = pDataObj;
+	POINT pt={ptl.x,ptl.y};
+	::ScreenToClient(m_hWndPaint,&pt);
+	CControlUI* pHover = FindControl(pt);
+	if( pHover == NULL ) 
+	{
+		*pdwEffect = DROPEFFECT_NONE;
+		return S_OK;
+	}
+	// Generate mouse hover event
+
+	pHover->OnDragEnter(pDataObj,grfKeyState,pt,pdwEffect);
+	m_pEventDrop = pHover;
+	return	S_OK;
+}
+
+HRESULT  CPaintManagerUI::OnDragOver(DWORD grfKeyState, POINTL ptl,DWORD *pdwEffect)
+{
+	POINT pt={ptl.x,ptl.y};
+	::ScreenToClient(m_hWndPaint,&pt);
+	m_ptLastMousePos = pt;
+	CControlUI* pNewHover = FindControl(pt);
+	if(pNewHover==NULL)
+	{
+		*pdwEffect = DROPEFFECT_NONE;
+		return S_OK;
+	}
+
+	if( pNewHover != NULL && pNewHover->GetManager() != this )
+	{
+		*pdwEffect = DROPEFFECT_NONE;
+		return S_OK;
+	}
+
+	if( pNewHover != m_pEventDrop && m_pEventDrop != NULL ) {
+		m_pEventDrop->OnDragLeave();
+		m_pEventDrop = NULL;
+	}
+
+	if( pNewHover != m_pEventDrop && pNewHover != NULL ) {
+		pNewHover->OnDragEnter(m_pDataObject,grfKeyState,pt,pdwEffect);
+		m_pEventDrop = pNewHover;
+	}
+
+	if( pNewHover != NULL ) {
+		pNewHover->OnDragOver(grfKeyState,pt,pdwEffect);
+	}
+	return S_OK;
+}
+
+HRESULT  CPaintManagerUI::OnDragLeave()
+{
+	m_pDataObject = NULL;
+	if( m_pEventDrop != NULL ) {
+		m_pEventDrop->OnDragLeave();
+		m_pEventDrop = NULL;
+	}
+	return S_OK;
+}
+
+HRESULT  CPaintManagerUI::OnDrop(__RPC__in_opt IDataObject *pDataObj, DWORD grfKeyState, POINTL ptl, __RPC__inout DWORD *pdwEffect)
+{
+	POINT pt={ptl.x,ptl.y};
+	::ScreenToClient(m_hWndPaint,&pt);
+	if( m_pEventDrop != NULL ) {
+
+		m_pEventDrop->OnDrop(pDataObj,grfKeyState,pt,pdwEffect);
+	}else
+	{
+		*pdwEffect = DROPEFFECT_NONE;
+		return S_OK;
+	}
+	return S_OK;
+}
 } // namespace DuiLib

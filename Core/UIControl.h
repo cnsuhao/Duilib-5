@@ -74,6 +74,9 @@ public:
 	void SetRoundSelect(RECT rcRoundSelect);
 	//////////////////////////////////////////////////////////////////////////
 
+	void SetDropEnabled(bool bEnable);
+	bool IsDropEnabled();
+
     // 位置相关
     virtual const RECT& GetPos() const;
     virtual void SetPos(RECT rc);
@@ -170,6 +173,11 @@ public:
 	CDuiString GetVirtualWnd() const;
 
 	void SetStyle(LPCTSTR pstrValue);
+	//拖拽相关行为
+	virtual void  OnDragEnter( IDataObject *pDataObj, DWORD grfKeyState, POINT pt,  DWORD *pdwEffect);
+	virtual void  OnDragOver(DWORD grfKeyState, POINT pt,DWORD *pdwEffect);
+	virtual void  OnDragLeave();
+	virtual void  OnDrop(IDataObject *pDataObj, DWORD grfKeyState, POINT pt, DWORD *pdwEffect);
 public:
     CEventSource OnInit;
     CEventSource OnDestroy;
@@ -225,8 +233,8 @@ protected:
 	//Added by gechunping  on 2014-3-14
 	RECT m_rcRoundSelect;
 	//Added by gechunping  on 2014-3-14
+	bool  m_bDragEnabled;
 	//////////////////////////////////////////////////////////////////////////
-
 };
 
 } // namespace DuiLib
