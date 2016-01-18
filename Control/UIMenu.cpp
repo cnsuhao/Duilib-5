@@ -261,6 +261,11 @@ namespace DuiLib
 					m_pLayout->Add(static_cast<CControlUI*>(m_pOwner->GetItemAt(i)));
 				}
 			}
+			//设置菜单圆角
+			SIZE szRoundCorner = m_pOwner->GetManager()->GetRoundCorner();
+			if (szRoundCorner.cx != 0 && szRoundCorner.cy != 0)
+				m_pm.SetRoundCorner(szRoundCorner.cx, szRoundCorner.cy);
+
 			m_pm.AttachDialog(m_pLayout);
 			m_pm.AddNotifier(this);
 
@@ -471,7 +476,7 @@ namespace DuiLib
 		LRESULT CMenuWnd::OnSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 		{
 			SIZE szRoundCorner = m_pm.GetRoundCorner();
-			if( !::IsIconic(*this) ) {
+			if( !::IsIconic(*this) && szRoundCorner.cx != 0 && szRoundCorner.cy != 0) {
 				CDuiRect rcWnd;
 				::GetWindowRect(*this, &rcWnd);
 				rcWnd.Offset(-rcWnd.left, -rcWnd.top);

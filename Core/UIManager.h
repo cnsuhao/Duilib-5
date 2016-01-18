@@ -371,6 +371,7 @@ private:
     bool m_bShowUpdateRect;
 	bool m_bMaxSizeBox;
 	bool m_bEnableDrop;
+
     //
     CControlUI* m_pRoot;
     CControlUI* m_pFocus;

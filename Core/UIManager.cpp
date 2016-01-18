@@ -725,32 +725,20 @@ bool CPaintManagerUI::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, LR
         return true;
     case WM_PAINT:
 		{
+			RECT rcPaint = { 0 };
+			if( !::GetUpdateRect(m_hWndPaint, &rcPaint, FALSE) ) return true;
+
 			if( m_pRoot == NULL ) {
 				PAINTSTRUCT ps = { 0 };
 				::BeginPaint(m_hWndPaint, &ps);
 				::EndPaint(m_hWndPaint, &ps);
 				return true;
 			}
-			RECT rcPaint = { 0 };
-			if( !::GetUpdateRect(m_hWndPaint, &rcPaint, FALSE) ) return true;
 
 			RECT rcClient = { 0 };
 			::GetClientRect(m_hWndPaint, &rcClient);
 			DWORD dwWidth = rcClient.right - rcClient.left;
 			DWORD dwHeight = rcClient.bottom - rcClient.top;
-
-			if( IsLayered() ) {
-				DWORD dwExStyle = ::GetWindowLong(m_hWndPaint, GWL_EXSTYLE);
-				DWORD dwNewExStyle = dwExStyle | WS_EX_LAYERED;
-				if(dwExStyle != dwNewExStyle) 
-					::SetWindowLong(m_hWndPaint, GWL_EXSTYLE, dwNewExStyle);
-				m_bOffscreenPaint = true;
-				UnionRect(&rcPaint, &rcPaint, &m_rcLayeredUpdate);
-				
-				if( rcPaint.right > rcClient.right ) rcPaint.right = rcClient.right;
-				if( rcPaint.bottom > rcClient.bottom ) rcPaint.bottom = rcClient.bottom;
-				::ZeroMemory(&m_rcLayeredUpdate, sizeof(m_rcLayeredUpdate));
-			}
 
 			if( m_bUpdateNeeded ) {
 				m_bUpdateNeeded = false;
@@ -780,6 +768,19 @@ bool CPaintManagerUI::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, LR
 			// Set focus to first control?
 			if( m_bFocusNeeded ) {
 				SetNextTabControl();
+			}
+
+			if( IsLayered() ) {
+				DWORD dwExStyle = ::GetWindowLong(m_hWndPaint, GWL_EXSTYLE);
+				DWORD dwNewExStyle = dwExStyle | WS_EX_LAYERED;
+				if(dwExStyle != dwNewExStyle) 
+					::SetWindowLong(m_hWndPaint, GWL_EXSTYLE, dwNewExStyle);
+				m_bOffscreenPaint = true;
+				UnionRect(&rcPaint, &rcPaint, &m_rcLayeredUpdate);
+
+				if( rcPaint.right > rcClient.right ) rcPaint.right = rcClient.right;
+				if( rcPaint.bottom > rcClient.bottom ) rcPaint.bottom = rcClient.bottom;
+				::ZeroMemory(&m_rcLayeredUpdate, sizeof(m_rcLayeredUpdate));
 			}
 
 			if( m_bOffscreenPaint && m_hbmpOffscreen == NULL ) {

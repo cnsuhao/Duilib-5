@@ -214,8 +214,11 @@ LRESULT WindowImplBase::OnMouseHover(UINT uMsg, WPARAM wParam, LPARAM lParam, BO
 LRESULT WindowImplBase::OnSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
 	SIZE szRoundCorner = m_PaintManager.GetRoundCorner();
+	//避免在窗口最大化是由于窗口圆角造成问题
+ 	if (IsZoomed(m_hWnd))
+		szRoundCorner.cx = szRoundCorner.cy = 1;
 #if defined(WIN32) && !defined(UNDER_CE)
-	if( !::IsIconic(*this) && (szRoundCorner.cx != 0 || szRoundCorner.cy != 0) ) {
+	if( !::IsIconic(m_hWnd) && (szRoundCorner.cx != 0 || szRoundCorner.cy != 0) ) {
 		CDuiRect rcWnd;
 		::GetWindowRect(*this, &rcWnd);
 		rcWnd.Offset(-rcWnd.left, -rcWnd.top);
@@ -243,8 +246,7 @@ LRESULT WindowImplBase::OnSysCommand(UINT uMsg, WPARAM wParam, LPARAM lParam, BO
 		SendMessage(WM_CLOSE);
 		return 0;
 	}
-	//如果当前消息是还原命令，则交给UIManager来控制
-	//bHandled = FALSE;
+
 	return CWindowWnd::HandleMessage(uMsg, wParam, lParam);
 }
 

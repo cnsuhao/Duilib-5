@@ -75,6 +75,9 @@ public:
     HWND Subclass(HWND hWnd);
     void Unsubclass();
     void ShowWindow(bool bShow = true, bool bTakeFocus = true);
+	/************************************************************************/
+	/* 该函数会将焦掉转移，关闭自对话框后，非父对话框需要重新获取焦点      */
+	/************************************************************************/
     UINT ShowModal();
     void Close(UINT nRet = IDOK);
     void CenterWindow();	// 居中，支持扩展屏幕

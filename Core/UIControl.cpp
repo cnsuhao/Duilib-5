@@ -1228,7 +1228,6 @@ void  CControlUI::OnDragEnter( IDataObject *pDataObj, DWORD grfKeyState, POINT p
 	if (IsDropEnabled())
 	{
 		*pdwEffect = DROPEFFECT_COPY;
-
 	}else
 	{
 		*pdwEffect = DROPEFFECT_NONE;
@@ -1241,7 +1240,6 @@ void  CControlUI::OnDragOver(DWORD grfKeyState, POINT pt,DWORD *pdwEffect)
 	if (IsDropEnabled())
 	{
 		*pdwEffect = DROPEFFECT_COPY;
-
 	}else
 	{
 		*pdwEffect = DROPEFFECT_NONE;
@@ -1252,9 +1250,8 @@ void  CControlUI::OnDragOver(DWORD grfKeyState, POINT pt,DWORD *pdwEffect)
 void  CControlUI::OnDragLeave()
 {
 	if (IsDropEnabled())
-		//OnDragLeave();
 		return;
-	else if( m_pParent != NULL ) m_pParent->OnDragLeave();
+	else 	if( m_pParent != NULL ) m_pParent->OnDragLeave();
 }
 
 void  CControlUI::OnDrop(IDataObject *pDataObj, DWORD grfKeyState, POINT pt, DWORD *pdwEffect)
@@ -1262,7 +1259,6 @@ void  CControlUI::OnDrop(IDataObject *pDataObj, DWORD grfKeyState, POINT pt, DWO
 	if (IsDropEnabled())
 	{
 		*pdwEffect = DROPEFFECT_COPY;
-
 	}else
 	{
 		*pdwEffect = DROPEFFECT_NONE;

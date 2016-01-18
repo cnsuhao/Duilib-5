@@ -184,6 +184,7 @@ CControlUI* CDialogBuilder::Create(IDialogBuilderCallback* pCallback, CPaintMana
                         LPTSTR pstr = NULL;
                         int cx = _tcstol(pstrValue, &pstr, 10);  ASSERT(pstr);    
                         int cy = _tcstol(pstr + 1, &pstr, 10);    ASSERT(pstr); 
+						//如果设置了窗口阴影，请根据需要增大这个值
                         pManager->SetRoundCorner(cx, cy);
                     } 
                     else if( _tcscmp(pstrName, _T("mininfo")) == 0 ) {
