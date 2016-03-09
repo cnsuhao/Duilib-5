@@ -187,6 +187,7 @@ CPaintManagerUI::~CPaintManagerUI()
     RemoveAllDefaultAttributeList();
     RemoveAllOptionGroups();
     RemoveAllTimers();
+	RemoveAllStyleAttributeList();
 
     // Reset other parts...
     if( m_hwndTooltip != NULL ) ::DestroyWindow(m_hwndTooltip);
@@ -201,10 +202,13 @@ void CPaintManagerUI::Init(HWND hWnd)
 {
     ASSERT(::IsWindow(hWnd));
     // Remember the window context we came from
-    m_hWndPaint = hWnd;
-    m_hDcPaint = ::GetDC(hWnd);
-    // We'll want to filter messages globally too
-    m_aPreMessages.Add(this);
+	if (m_hWndPaint != hWnd)
+	{
+		m_hWndPaint = hWnd;
+		m_hDcPaint = ::GetDC(hWnd);
+		// We'll want to filter messages globally too
+		m_aPreMessages.Add(this);
+	}
 }
 
 HINSTANCE CPaintManagerUI::GetInstance()
